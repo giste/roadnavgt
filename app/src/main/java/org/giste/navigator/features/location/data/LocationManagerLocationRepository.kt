@@ -27,15 +27,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.location.domain.Location
 import org.giste.navigator.features.location.domain.LocationPermissionException
 import org.giste.navigator.features.location.domain.LocationRepository
+import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Inject
 
 private const val TAG = "LocationManagerLocationRepository"
 
 class LocationManagerLocationRepository @Inject constructor(
+    private val settingsRepository: SettingsRepository,
     private val context: Context,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : LocationRepository {
@@ -63,6 +66,8 @@ class LocationManagerLocationRepository @Inject constructor(
             }
         }
 
+        val settings = settingsRepository.getSettings().first()
+
         if (context.checkSelfPermission(
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED && context.checkSelfPermission(
@@ -73,7 +78,10 @@ class LocationManagerLocationRepository @Inject constructor(
         }
 
         locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER, 1000, 10f, locationCallback
+            LocationManager.GPS_PROVIDER,
+            settings.locationMinTime,
+            settings.locationMinDistance.toFloat(),
+            locationCallback
         )
 
         awaitClose {
