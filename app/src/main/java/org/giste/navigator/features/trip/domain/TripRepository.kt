@@ -26,5 +26,4 @@ interface TripRepository {
     suspend fun resetTrip()
     suspend fun addDistance(@IntRange(from = 0, to = 99999) distance: Int)
     suspend fun setPartial(@IntRange(from = 0, to = 99999) partial: Int)
-    suspend fun setTotal(@IntRange(from = 0, to = 999999) total: Int)
 }

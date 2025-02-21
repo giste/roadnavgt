@@ -100,10 +100,5 @@ class GetLocationsUseCaseTests {
         override suspend fun setPartial(partial: Int) {
             TODO("Not yet implemented")
         }
-
-        override suspend fun setTotal(total: Int) {
-            TODO("Not yet implemented")
-        }
-
     }
 }

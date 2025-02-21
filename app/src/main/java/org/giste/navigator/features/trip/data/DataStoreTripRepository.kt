@@ -71,10 +71,6 @@ class DataStoreTripRepository @Inject constructor(
         dataStore.edit { it[TRIP_PARTIAL] = getSafePartial(partial) }
     }
 
-    override suspend fun setTotal(total: Int) {
-        dataStore.edit { it[TRIP_TOTAL] = getSafeTotal(total) }
-    }
-
     private fun getSafePartial(partial: Int): Int{
         return partial.coerceAtLeast(0).coerceAtMost(PARTIAL_MAX)
     }
