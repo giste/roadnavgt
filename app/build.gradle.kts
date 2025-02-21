@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.hilt.android)
+    implementation(libs.paging.compose)
 
     ksp(libs.hilt.compiler)
 
@@ -62,6 +63,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
+    testImplementation(libs.paging.testing)
 
     testRuntimeOnly(libs.junit.jupiter.engine)
 
