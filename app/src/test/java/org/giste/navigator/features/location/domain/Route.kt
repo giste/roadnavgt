@@ -104,7 +104,7 @@ object TresCantosRoute : Route {
 object NavacerradaRoute : Route {
     override fun getDistance() = 7300
 
-    override fun getLocations() = listOf<Location>(
+    override fun getLocations() = listOf(
     Location(latitude = 40.737182, longitude = -4.023114, altitude = 1313.000000),
     Location(latitude = 40.737195, longitude = -4.023194, altitude = 1314.000000),
     Location(latitude = 40.737202, longitude = -4.023284, altitude = 1314.000000),

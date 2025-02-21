@@ -15,9 +15,7 @@
 
 package org.giste.navigator.features.trip.data
 
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,59 +24,58 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.features.trip.domain.TripRepository
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 private const val TEST_DATASTORE: String = "test.preferences_pb"
+private const val PARTIAL_MAX = 999_990
+private const val TOTAL_MAX = 9_999_990
 private val TRIP_PARTIAL = intPreferencesKey("TRIP_PARTIAL")
 private val TRIP_TOTAL = intPreferencesKey("TRIP_TOTAL")
 
 @DisplayName("Unit tests for DataStoreTripRepository")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataStoreTripRepositoryTests {
-    private lateinit var testDataStore: DataStore<Preferences>
-    private lateinit var tripRepository: TripRepository
+    @TempDir
+    private lateinit var temporaryFolder: File
+    private val testDataStore = PreferenceDataStoreFactory.create(
+        produceFile = { File(temporaryFolder, TEST_DATASTORE) },
+    )
+    private val tripRepository: TripRepository = DataStoreTripRepository(testDataStore)
 
-    @BeforeEach
-    fun beforeEach(@TempDir temporaryFolder: File) = runTest {
-        testDataStore = PreferenceDataStoreFactory.create(
-            produceFile = { File(temporaryFolder, TEST_DATASTORE) },
-        )
-
-        tripRepository = DataStoreTripRepository(testDataStore)
-
-        // Reset data store
-        testDataStore.edit {
-            it[TRIP_PARTIAL] = 0
-            it[TRIP_TOTAL] = 0
-        }
+    @AfterEach
+    fun afterEach(@TempDir temporaryFolder: File) = runTest {
+        // Clear datastore
+        testDataStore.edit { it.clear() }
     }
 
     @DisplayName("Given minimum partial (0)")
     @Nested
     inner class PartialIsZero {
         @Test
-        fun `incrementPartial() adds 10 meters`() = runTest {
+        fun `increment adds 10 meters to partial`() = runTest {
             tripRepository.incrementPartial()
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(10, partial)
+            val actualPartial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
+            assertEquals(10, actualPartial)
         }
 
         @Test
-        fun `decrementPartial() does not change partial`() = runTest {
+        fun `decrement does not change partial`() = runTest {
             tripRepository.decrementPartial()
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(0, partial)
+            val actualPartial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
+            assertEquals(0, actualPartial)
         }
     }
 
@@ -87,23 +84,23 @@ class DataStoreTripRepositoryTests {
     inner class PartialIsMax {
         @BeforeEach
         fun beforeEach() = runTest {
-            testDataStore.edit { it[TRIP_PARTIAL] = 999990 }
+            testDataStore.edit { it[TRIP_PARTIAL] = PARTIAL_MAX }
         }
 
         @Test
-        fun `incrementPartial() does not change partial`() = runTest {
+        fun `increment does not change partial`() = runTest {
             tripRepository.incrementPartial()
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(999990, partial)
+            val actualPartial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
+            assertEquals(PARTIAL_MAX, actualPartial)
         }
 
         @Test
-        fun `decrementPartial() subtract 10 meters`() = runTest {
+        fun `decrement subtract 10 meters to partial `() = runTest {
             tripRepository.decrementPartial()
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(999980, partial)
+            val actualPartial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
+            assertEquals(999980, actualPartial)
         }
     }
 
@@ -119,63 +116,68 @@ class DataStoreTripRepositoryTests {
         }
 
         @Test
-        fun `resetPartial() sets partial to 0`() = runTest {
+        fun `reset partial sets it to 0`() = runTest {
             tripRepository.resetPartial()
 
             val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(0, partial)
+            assertEquals(0, partial)
         }
 
         @Test
-        fun `resetTrip() sets partial and total to 0`() = runTest {
+        fun `reset trip sets partial and total to 0`() = runTest {
             tripRepository.resetTrip()
 
             val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(0, partial)
+            assertEquals(0, partial)
             val total = testDataStore.data.map { it[TRIP_TOTAL] }.first()
-            Assertions.assertEquals(0, total)
+            assertEquals(0, total)
         }
     }
 
-    @DisplayName("setPartial()")
+    @DisplayName("set partial")
     @Nested
     inner class SetPartialTests {
         @Test
-        fun `updates partial when it's in range (0-999999)`() = runTest {
-            tripRepository.setPartial(123450)
+        fun `updates partial when new value is in range (0-999_999)`() = runTest {
+            val expectedPartial = 123_456
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(123450, partial)
+            tripRepository.setPartial(expectedPartial)
+
+            val actualPartial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
+            assertEquals(expectedPartial, actualPartial)
         }
 
         @Test
-        fun `set maximum when it's greater than 999990`() = runTest {
-            tripRepository.setPartial(1000000)
+        fun `sets the maximum when new value is greater than 999990`() = runTest {
+            tripRepository.setPartial(1_000_000)
 
             val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(999990, partial)
+            assertEquals(PARTIAL_MAX, partial)
         }
 
         @Test
-        fun `set minimum when it's less than zero`() = runTest {
+        fun `sets the minimum when it's less than 0`() = runTest {
             tripRepository.setPartial(-1)
 
             val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(0, partial)
+            assertEquals(0, partial)
         }
     }
 
-    @DisplayName("addDistance()")
+    @DisplayName("add distance")
     @Nested
     inner class AddDistanceTests {
         @Test
         fun `distance is added to partial and total`() = runTest {
+            val expectedTrip = Trip(100, 100)
+
             tripRepository.addDistance(100)
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(100, partial)
-            val total = testDataStore.data.map { it[TRIP_TOTAL] }.first()
-            Assertions.assertEquals(100, total)
+            val actualTrip = Trip(
+                partial = testDataStore.data.map { it[TRIP_PARTIAL] ?: 0 }.first(),
+                total = testDataStore.data.map { it[TRIP_TOTAL] ?: 0 }.first(),
+            )
+            assertEquals(expectedTrip, actualTrip)
         }
 
         @Test
@@ -184,13 +186,15 @@ class DataStoreTripRepositoryTests {
                 it[TRIP_PARTIAL] = 999900
                 it[TRIP_TOTAL] = 9999900
             }
+            val expectedTrip = Trip(PARTIAL_MAX, TOTAL_MAX)
 
             tripRepository.addDistance(100)
 
-            val partial = testDataStore.data.map { it[TRIP_PARTIAL] }.first()
-            Assertions.assertEquals(999990, partial)
-            val total = testDataStore.data.map { it[TRIP_TOTAL] }.first()
-            Assertions.assertEquals(9999990, total)
+            val actualTrip = Trip(
+                partial = testDataStore.data.map { it[TRIP_PARTIAL] ?: 0 }.first(),
+                total = testDataStore.data.map { it[TRIP_TOTAL] ?: 0 }.first(),
+            )
+            assertEquals(expectedTrip, actualTrip)
         }
     }
 
@@ -201,9 +205,13 @@ class DataStoreTripRepositoryTests {
         val trip1 = Trip(10, 10)
         val trip2 = Trip(20, 20)
         val trip3 = Trip(30, 30)
-        val trips = mutableListOf<Trip>()
+        val expectedTrips = listOf(trip0, trip1, trip2, trip3)
+        val actualTrips = mutableListOf<Trip>()
 
-        val job = launch { tripRepository.getTrip().toList(trips) }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            tripRepository.getTrip().toList(actualTrips)
+        }
+
         testDataStore.edit {
             it[TRIP_PARTIAL] = 10
             it[TRIP_TOTAL] = 10
@@ -216,9 +224,7 @@ class DataStoreTripRepositoryTests {
             it[TRIP_PARTIAL] = 30
             it[TRIP_TOTAL] = 30
         }
-        advanceUntilIdle()
-        job.cancel()
 
-        Assertions.assertEquals(listOf(trip0, trip1, trip2, trip3), trips)
+        assertEquals(expectedTrips, actualTrips)
     }
 }

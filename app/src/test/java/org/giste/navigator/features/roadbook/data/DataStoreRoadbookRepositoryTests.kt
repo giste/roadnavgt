@@ -29,9 +29,9 @@ import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.domain.RoadbookRepository
 import org.giste.navigator.features.roadbook.domain.Scroll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
@@ -52,14 +52,10 @@ class DataStoreRoadbookRepositoryTests {
         roadbookDatasource = roadbookDatasource,
     )
 
-    @BeforeEach
-    fun beforeEach(@TempDir temporaryFolder: File) = runTest {
-        // Reset datastore
-        testDataStore.edit {
-            it[DataStoreRoadbookRepository.ROADBOOK_PAGE_INDEX] = 0
-            it[DataStoreRoadbookRepository.ROADBOOK_PAGE_OFFSET] = 0
-            it[DataStoreRoadbookRepository.ROADBOOK_URI] = ""
-        }
+    @AfterEach
+    fun afterEach() = runTest {
+        // Clear datastore
+        testDataStore.edit { it.clear() }
     }
 
     @Test

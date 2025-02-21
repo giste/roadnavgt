@@ -15,9 +15,8 @@
 
 package org.giste.navigator.features.settings.data
 
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,13 +25,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.domain.SettingsRepository
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
@@ -40,34 +39,36 @@ private const val TEST_DATASTORE: String = "test.preferences_pb"
 private val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")
 private val LOCATION_MIN_DISTANCE = intPreferencesKey("SETTINGS_LOCATION_MIN_DISTANCE")
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataStoreSettingsRepositoryTests {
-    private lateinit var testDataStore: DataStore<Preferences>
-    private lateinit var repository: SettingsRepository
+    @TempDir
+    private lateinit var temporaryFolder: File
+    private val testDataStore = PreferenceDataStoreFactory.create(
+        produceFile = { File(temporaryFolder, TEST_DATASTORE) },
+    )
+    private val settingsRepository: SettingsRepository = DataStoreSettingsRepository(
+        dataStore = testDataStore,
+    )
 
-    @BeforeEach
-    fun beforeEach(@TempDir temporaryFolder: File){
-        testDataStore = PreferenceDataStoreFactory.create(
-            produceFile = { File(temporaryFolder, TEST_DATASTORE) },
-        )
-
-        repository = DataStoreSettingsRepository(
-            dataStore = testDataStore,
-        )
+    @AfterEach
+    fun afterEach() = runTest {
+        // Clear datastore
+        testDataStore.edit { it.clear() }
     }
 
     @Test
     fun `store settings when saved`() = runTest {
-        val settings = Settings(500L, 5)
+        val expectedSettings = Settings(500L, 5)
 
-        repository.saveSettings(settings)
+        settingsRepository.saveSettings(expectedSettings)
 
-        val readSettings = testDataStore.data.map {
+        val actualSettings = testDataStore.data.map {
             Settings(
                 locationMinTime = it[LOCATION_MIN_TIME] ?: 1_000L,
                 locationMinDistance = it[LOCATION_MIN_DISTANCE] ?: 10,
             )
         }.first()
-        Assertions.assertEquals(settings, readSettings)
+        Assertions.assertEquals(expectedSettings, actualSettings)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -76,15 +77,14 @@ class DataStoreSettingsRepositoryTests {
         val settings1 = Settings()
         val settings2 = Settings(100L, 1)
         val settings3 = Settings(200L, 2)
+        val actualSettings = mutableListOf<Settings>()
 
-        val settings = mutableListOf<Settings>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            repository.getSettings().toList(settings)
+            settingsRepository.getSettings().toList(actualSettings)
         }
 
-        repository.saveSettings(settings2)
-        repository.saveSettings(settings3)
-
-        Assertions.assertEquals(listOf(settings1, settings2, settings3), settings)
+        settingsRepository.saveSettings(settings2)
+        settingsRepository.saveSettings(settings3)
+        Assertions.assertEquals(listOf(settings1, settings2, settings3), actualSettings)
     }
 }

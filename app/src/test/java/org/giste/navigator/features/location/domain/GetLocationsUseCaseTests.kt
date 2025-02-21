@@ -15,9 +15,10 @@
 
 package org.giste.navigator.features.location.domain
 
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
@@ -26,31 +27,48 @@ import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.features.trip.domain.TripRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 import kotlin.math.absoluteValue
 
 @DisplayName("Unit tests for GetLocationsUseCase")
 @ExtendWith(MockKExtension::class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GetLocationsUseCaseTests {
-    @MockK private lateinit var locationRepository: LocationRepository
+    private val locationRepository: LocationRepository = mockk()
+    private lateinit var tripRepository: FakeTripRepository
+    private lateinit var getLocationsUseCase: GetLocationsUseCase
 
-    @Test
-    fun `locations must generate distances`() = runTest {
-        val tripRepository = FakeTripRepository()
-        coEvery { locationRepository.getLocations() } returns TresCantosRoute.getLocations().asFlow()
-
-        val getLocationsUseCase = GetLocationsUseCase(
+    @BeforeEach
+    fun beforeEach() {
+        clearAllMocks()
+        tripRepository = FakeTripRepository()
+        getLocationsUseCase = GetLocationsUseCase(
             locationRepository = locationRepository,
             tripRepository = tripRepository,
         )
+    }
+
+    @ParameterizedTest
+    @MethodSource("routeProvider")
+    fun `locations must generate correct distances`(route: Route) = runTest {
+        coEvery { locationRepository.getLocations() } returns route.getLocations().asFlow()
 
         val locations = getLocationsUseCase().toList()
 
-        assertEquals(TresCantosRoute.getLocations().size, locations.size)
-        assertTrue(TresCantosRoute.getDistance().minus(tripRepository.distance).absoluteValue < 10)
+        assertEquals(route.getLocations().size, locations.size)
+        assertTrue(route.getDistance().minus(tripRepository.distance).absoluteValue < 10)
     }
+
+    private fun routeProvider() = Stream.of(
+        TresCantosRoute,
+        NavacerradaRoute,
+    )
 
     class FakeTripRepository : TripRepository {
         var distance: Int = 0
