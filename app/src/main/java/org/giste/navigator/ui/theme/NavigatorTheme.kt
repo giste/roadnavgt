@@ -15,19 +15,18 @@
 
 package org.giste.navigator.ui.theme
 
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowSizeClass.Companion.calculateFromSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 
 object NavigatorTheme {
     val dimensions: NavigatorDimensions
@@ -40,7 +39,7 @@ object NavigatorTheme {
         @ReadOnlyComposable
         get() = localNavigatorTypography.current
 
-    val color: ColorScheme
+    val colors: ColorScheme
         @Composable
         @ReadOnlyComposable
         get() = localNavigatorColor.current
@@ -61,13 +60,16 @@ private val localNavigatorColor = staticCompositionLocalOf {
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun NavigatorTheme(
-    windowSizeClass: WindowSizeClass = calculateFromSize(DpSize(853.dp, 485.dp)),
+    windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, // calculateFromSize(DpSize(853.dp, 485.dp)),
     dynamicColor: Boolean = true,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     dimensions: NavigatorDimensions = navigatorDimensions(windowSizeClass),
     typography: Typography = navigatorTypography(windowSizeClass),
-    colorScheme: ColorScheme = navigatorColorScheme(dynamicColor, isSystemInDarkTheme()),
+    colorScheme: ColorScheme = navigatorColorScheme(dynamicColor, darkTheme),
     content: @Composable () -> Unit,
 ) {
+    Log.d("NavigatorTheme", "Window size: $windowSizeClass")
+
     CompositionLocalProvider(
         localNavigatorDimensions provides dimensions,
         localNavigatorTypography provides typography,

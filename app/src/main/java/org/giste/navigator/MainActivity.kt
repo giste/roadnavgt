@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass.Companion.calculateFromSize
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,11 +24,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val windowSize = calculateWindowSizeClass(this)
+            val windowSize = currentWindowAdaptiveInfo().windowSizeClass
             NavigatorTheme(windowSize) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Width: ${windowSize.widthSizeClass}, Height: ${windowSize.heightSizeClass}",
+                        name = "Width: ${windowSize.windowWidthSizeClass}, Height: ${windowSize.windowHeightSizeClass}",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -49,8 +49,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    val windowSize = calculateFromSize(DpSize(853.dp, 485.dp))
-    NavigatorTheme(windowSize) {
+    NavigatorTheme() {
         Greeting("Android")
     }
 }

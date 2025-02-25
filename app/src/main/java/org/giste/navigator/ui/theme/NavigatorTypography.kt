@@ -16,22 +16,23 @@
 package org.giste.navigator.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Compact
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Expanded
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Medium
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass.Companion.COMPACT
+import androidx.window.core.layout.WindowWidthSizeClass.Companion.EXPANDED
+import androidx.window.core.layout.WindowWidthSizeClass.Companion.MEDIUM
 
 @Composable
-fun navigatorTypography(windowSizeClass: WindowSizeClass) = when(windowSizeClass.widthSizeClass) {
-    Expanded -> navigatorTypographyExpanded
-    Medium -> navigatorTypographyMedium
-    Compact -> navigatorTypographyCompact
-    else -> defaultNavigatorTypography()
-}
+fun navigatorTypography(windowSizeClass: WindowSizeClass) =
+    when (windowSizeClass.windowWidthSizeClass) {
+        EXPANDED -> navigatorTypographyExpanded
+        MEDIUM -> navigatorTypographyMedium
+        COMPACT -> navigatorTypographyCompact
+        else -> defaultNavigatorTypography()
+    }
 
 fun defaultNavigatorTypography() = navigatorTypographyExpanded
 
@@ -73,7 +74,7 @@ private val navigatorTypographyMedium = Typography(
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontSize = 36.sp
+        fontSize = 40.sp
     ),
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -96,7 +97,7 @@ private val navigatorTypographyCompact = Typography(
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontSize = 28.sp
+        fontSize = 36.sp
     ),
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,

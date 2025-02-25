@@ -15,27 +15,29 @@
 
 package org.giste.navigator.ui.theme
 
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Compact
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Expanded
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Medium
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass.Companion.COMPACT
+import androidx.window.core.layout.WindowWidthSizeClass.Companion.EXPANDED
+import androidx.window.core.layout.WindowWidthSizeClass.Companion.MEDIUM
 
 @Immutable
 data class NavigatorDimensions(
     val marginPadding: Dp,
     val dialogButtonIconSize: Dp,
     val dialogKeyIconSize: Dp,
+    val dialogWidth: Dp,
+    val minClickableSize: Dp,
 )
 
 @Composable
-fun navigatorDimensions(windowSizeClass: WindowSizeClass) = when(windowSizeClass.widthSizeClass) {
-    Expanded -> navigatorExpandedDimensions
-    Medium -> navigatorMediumDimensions
-    Compact -> navigatorCompactDimensions
+fun navigatorDimensions(windowSizeClass: WindowSizeClass) = when(windowSizeClass.windowWidthSizeClass) {
+    EXPANDED -> navigatorExpandedDimensions
+    MEDIUM -> navigatorMediumDimensions
+    COMPACT -> navigatorCompactDimensions
     else -> defaultNavigatorDimensions()
 }
 
@@ -43,18 +45,24 @@ fun defaultNavigatorDimensions() = navigatorExpandedDimensions
 
 private val navigatorExpandedDimensions = NavigatorDimensions(
     marginPadding = 4.dp,
-    dialogButtonIconSize = 64.dp,
+    dialogButtonIconSize = 72.dp,
     dialogKeyIconSize = 40.dp,
+    dialogWidth = 750.dp,
+    minClickableSize = 80.dp,
 )
 
 private val navigatorMediumDimensions = NavigatorDimensions(
     marginPadding = 3.dp,
-    dialogButtonIconSize = 48.dp,
+    dialogButtonIconSize = 64.dp,
     dialogKeyIconSize = 32.dp,
+    dialogWidth = 600.dp,
+    minClickableSize = 72.dp,
 )
 
 private val navigatorCompactDimensions = NavigatorDimensions(
     marginPadding = 2.dp,
-    dialogButtonIconSize = 32.dp,
+    dialogButtonIconSize = 56.dp,
     dialogKeyIconSize = 24.dp,
+    dialogWidth = 450.dp,
+    minClickableSize = 64.dp,
 )
