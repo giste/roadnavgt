@@ -16,7 +16,7 @@
 package org.giste.navigator.ui
 
 import android.icu.text.DecimalFormatSymbols
-import android.util.Log
+import android.icu.text.NumberFormat
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,51 +36,86 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.giste.navigator.R
+import org.giste.navigator.ui.SetNumberDialogTags.ACCEPT_BUTTON
+import org.giste.navigator.ui.SetNumberDialogTags.CANCEL_BUTTON
+import org.giste.navigator.ui.SetNumberDialogTags.DESCRIPTION
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_0
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_1
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_2
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_3
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_4
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_5
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_6
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_7
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_8
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_9
+import org.giste.navigator.ui.SetNumberDialogTags.KEY_DELETE
+import org.giste.navigator.ui.SetNumberDialogTags.NUMBER_FIELD
+import org.giste.navigator.ui.SetNumberDialogTags.TITLE
 import org.giste.navigator.ui.theme.NavigatorTheme
 
-private const val BACKSPACE = "<"
+private const val DELETE = '<'
+
+object SetNumberDialogTags {
+    const val TITLE = "TITLE"
+    const val DESCRIPTION = "DESCRIPTION"
+    const val NUMBER_FIELD = "NUMBER_FIELD"
+    const val ACCEPT_BUTTON = "ACCEPT_BUTTON"
+    const val CANCEL_BUTTON = "CANCEL_BUTTON"
+    const val KEY_0 = "KEY_0"
+    const val KEY_1 = "KEY_1"
+    const val KEY_2 = "KEY_2"
+    const val KEY_3 = "KEY_3"
+    const val KEY_4 = "KEY_4"
+    const val KEY_5 = "KEY_5"
+    const val KEY_6 = "KEY_6"
+    const val KEY_7 = "KEY_7"
+    const val KEY_8 = "KEY_8"
+    const val KEY_9 = "KEY_9"
+    const val KEY_DELETE = "KEY_DELETE"
+}
 
 @Preview(
     name = "Tab Active 3 Landscape",
     showBackground = true,
-    device = "spec:width=1920px,height=1200px,dpi=360, isRound=false, orientation=landscape"
+    device = "spec:width=1920px,height=1200px,dpi=360, isRound=false, orientation=landscape",
 )
 @Preview(
     name = "Tab Active 3 Portrait",
     showBackground = true,
-    device = "spec:width=1920px,height=1200px,dpi=360, isRound=false, orientation=portrait"
+    device = "spec:width=1920px,height=1200px,dpi=360, isRound=false, orientation=portrait",
 )
 @Composable
-private fun NumberDialogPreview() {
-    NavigatorTheme(dynamicColor = true, darkTheme = true) {
-        NumberDialog(
+private fun SetNumberDialogPreview() {
+    NavigatorTheme(dynamicColor = false, darkTheme = false) {
+        SetNumberDialog(
             showDialog = remember { mutableStateOf(true) },
             title = "Title",
             description = "Description of the requested number",
-            text = "999,99",
+            number = 1234,
             numberOfIntegerDigits = 4,
             numberOfDecimalDigits = 2,
             onAccept = { },
@@ -89,91 +124,59 @@ private fun NumberDialogPreview() {
 }
 
 @Composable
-fun NumberDialog(
+fun SetNumberDialog(
     showDialog: MutableState<Boolean>,
     title: String,
     description: String,
-    text: String,
+    number: Int,
     numberOfIntegerDigits: Int,
     numberOfDecimalDigits: Int,
-    onAccept: (String) -> Unit,
+    onAccept: (Int) -> Unit,
     decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance(),
 ) {
-    val thousandsSeparator by remember { mutableStateOf(decimalFormatSymbols.groupingSeparator.toString()) }
-    val decimalSeparator by remember { mutableStateOf(decimalFormatSymbols.decimalSeparator) }
-    val zeroDigit by remember { mutableStateOf(decimalFormatSymbols.zeroDigit.toString()) }
+    val digits by rememberSaveable { mutableStateOf(decimalFormatSymbols.digits) }
+    val numberFormat by rememberSaveable {
+        val nf = NumberFormat.getInstance(decimalFormatSymbols.locale)
+        with(nf) {
+            isGroupingUsed = true
+            minimumFractionDigits = numberOfDecimalDigits
+            maximumFractionDigits = numberOfDecimalDigits
+            minimumIntegerDigits = 1
+            maximumIntegerDigits = numberOfIntegerDigits
+        }
+        mutableStateOf(nf)
+    }
+    val decimalFactor by rememberSaveable {
+        var scale = 1
+        for (i in 1..numberOfDecimalDigits) {
+            scale *= 10
+        }
 
-//    fun parseNumber(text: String): String {
-//        val hasDecimalSeparator = text.find { it == decimalSeparator } != null
-//        val decimalPart = if (hasDecimalSeparator) {
-//            text.dropWhile { it != decimalSeparator }.drop(1)
-//        } else {
-//            ""
-//        }
-//        val intPart = text.take(text.length - decimalPart.length - 1)
-//    }
+        mutableIntStateOf(scale)
+    }
+    val maxNumber by rememberSaveable {
+        var max = 1
+        for (i in 1..numberOfIntegerDigits) {
+            max *= 10
+        }
 
-    var number by rememberSaveable { mutableStateOf(text) }
+        mutableIntStateOf(max.minus(1))
+    }
 
-    fun processKey(key: String) {
-        val currentNumber = number.filter { it.isDigit() }
+    var currentNumber by rememberSaveable {
+        mutableIntStateOf(number.coerceAtLeast(0).coerceAtMost(maxNumber))
+    }
 
-        Log.d("processKey", "Current number: $currentNumber, Key: $key")
+    fun processKey(key: Char) {
+        currentNumber = when (key) {
+            DELETE -> currentNumber.div(10)
 
-        val newNumber = when (key) {
-            BACKSPACE -> if (currentNumber.length == 1) zeroDigit else currentNumber.dropLast(1)
-
-            else -> if (currentNumber.length < numberOfIntegerDigits + numberOfDecimalDigits) {
-                if (currentNumber == zeroDigit) key else "$currentNumber$key"
+            else -> if (currentNumber.toString().length < (numberOfIntegerDigits + numberOfDecimalDigits)) {
+                currentNumber.times(10).plus(digits.indexOf(key))
             } else {
                 currentNumber
             }
         }
-
-        Log.d("processKey", "New number: $newNumber")
-
-        val fractionalPart = newNumber.takeLast(numberOfDecimalDigits)
-        val integerPart = if (newNumber.length > numberOfDecimalDigits) {
-            newNumber.take(newNumber.length - numberOfDecimalDigits)
-        } else {
-            ""
-        }.reversed()
-            .chunked(3)
-            .joinToString(thousandsSeparator)
-            .reversed()
-
-        Log.d("processKey", "Integer: $integerPart, Fractional: $fractionalPart")
-
-        number = if (integerPart.isEmpty()) {
-            fractionalPart
-        } else {
-            "$integerPart$decimalSeparator$fractionalPart"
-        }
-
-        Log.d("processKey", "Number: $number")
-    }
-
-    fun getBackgroundMask(): String {
-        val integerPart = generateSequence { zeroDigit }
-            .take(numberOfIntegerDigits)
-            .joinToString("")
-            .chunked(3)
-            .joinToString(thousandsSeparator)
-            .reversed()
-
-        val fractionalPart = if (numberOfDecimalDigits == 0) {
-            ""
-        } else {
-            StringBuilder()
-                .append(decimalSeparator)
-                .append(
-                    generateSequence { zeroDigit }
-                        .take(numberOfDecimalDigits)
-                        .joinToString("")
-                )
-        }
-
-        return "$integerPart$fractionalPart".dropLast(number.length)
     }
 
     Dialog(
@@ -205,15 +208,16 @@ fun NumberDialog(
                         Text(
                             text = description,
                             modifier = Modifier
+                                .testTag(DESCRIPTION)
                                 .fillMaxWidth()
+                                .testTag("")
                                 .padding(NavigatorTheme.dimensions.marginPadding),
                             overflow = TextOverflow.Clip,
                             softWrap = true,
                             style = NavigatorTheme.typography.bodyLarge,
                         )
                         NumberField(
-                            backgroundMask = { getBackgroundMask() },
-                            number = number,
+                            number = numberFormat.format(currentNumber.div(decimalFactor.toFloat())),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(NavigatorTheme.dimensions.marginPadding),
@@ -225,6 +229,7 @@ fun NumberDialog(
                             .weight(1f),
                     ) {
                         NumberPad(
+                            digits = digits,
                             onClick = { key -> processKey(key) }
                         )
                     }
@@ -232,7 +237,10 @@ fun NumberDialog(
                 HorizontalDivider()
                 DialogButtons(
                     onCancel = { showDialog.value = false },
-                    onAccept = { onAccept(number) },
+                    onAccept = {
+                        onAccept(currentNumber)
+                        showDialog.value = false
+                    },
                 )
             }
         }
@@ -247,17 +255,41 @@ fun DialogTitle(
     Text(
         text = title,
         modifier = modifier
+            .testTag(TITLE)
             .fillMaxWidth()
-            .background(NavigatorTheme.colors.primary)
+            .background(MaterialTheme.colorScheme.primary)
             .padding(NavigatorTheme.dimensions.marginPadding),
-        color = NavigatorTheme.colors.onPrimary,
-        style = NavigatorTheme.typography.titleLarge,
+        color = MaterialTheme.colorScheme.onPrimary,
+        style = MaterialTheme.typography.titleLarge,
     )
 }
 
 @Composable
+private fun NumberField(
+    number: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+    ) {
+        Text(
+            text = number,
+            modifier = Modifier
+                .testTag(NUMBER_FIELD)
+                .fillMaxWidth()
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(NavigatorTheme.dimensions.marginPadding),
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            textAlign = TextAlign.End,
+            style = MaterialTheme.typography.displayLarge,
+        )
+    }
+}
+
+@Composable
 fun NumberPad(
-    onClick: (String) -> Unit,
+    digits: CharArray,
+    onClick: (Char) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -265,36 +297,98 @@ fun NumberPad(
             .padding(NavigatorTheme.dimensions.marginPadding),
     ) {
         NumberPadRow {
-            PadKey(text = "7", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[7],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_7)
+            )
             VerticalDivider()
-            PadKey(text = "8", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[8],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_8)
+            )
             VerticalDivider()
-            PadKey(text = "9", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[9],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_9)
+            )
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(text = "4", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[4],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_4)
+            )
             VerticalDivider()
-            PadKey(text = "5", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[5],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_5)
+            )
             VerticalDivider()
-            PadKey(text = "6", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[6],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_6)
+            )
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(text = "1", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[1],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_1)
+            )
             VerticalDivider()
-            PadKey(text = "2", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[2],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_2)
+            )
             VerticalDivider()
-            PadKey(text = "3", onClick = onClick, modifier = Modifier.weight(1f))
+            PadKey(
+                key = digits[3],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_3)
+            )
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(text = "0", onClick = onClick, modifier = Modifier.weight(2f))
+            PadKey(
+                key = digits[0],
+                onClick = onClick,
+                modifier = Modifier
+                    .weight(2f)
+                    .testTag(KEY_0)
+            )
             VerticalDivider()
             PadKey(
                 icon = R.drawable.backspace,
-                onClick = { onClick(BACKSPACE) },
-                modifier = Modifier.weight(1f),
+                onClick = { onClick(DELETE) },
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(KEY_DELETE),
             )
         }
     }
@@ -315,17 +409,17 @@ private fun NumberPadRow(
 
 @Composable
 private fun PadKey(
-    text: String,
-    onClick: (String) -> Unit,
+    key: Char,
+    onClick: (Char) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ClickableKey(
-        onClick = { onClick(text) },
+        onClick = { onClick(key) },
         modifier = modifier,
     ) {
         Text(
-            text = text,
-            style = NavigatorTheme.typography.displaySmall,
+            text = key.toString(),
+            style = MaterialTheme.typography.displaySmall,
         )
     }
 }
@@ -376,6 +470,7 @@ fun DialogButtons(
     ) {
         Column(
             modifier = Modifier
+                .testTag(CANCEL_BUTTON)
                 .clickable { onCancel() }
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -388,7 +483,8 @@ fun DialogButtons(
         }
         Column(
             modifier = Modifier
-                .background(NavigatorTheme.colors.primary)
+                .testTag(ACCEPT_BUTTON)
+                .background(MaterialTheme.colorScheme.primary)
                 .clickable { onAccept() }
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -397,40 +493,8 @@ fun DialogButtons(
                 imageVector = Icons.Filled.Check,
                 contentDescription = "Accept",
                 modifier = Modifier.size(NavigatorTheme.dimensions.dialogButtonIconSize),
-                tint = NavigatorTheme.colors.onPrimary,
+                tint = MaterialTheme.colorScheme.onPrimary,
             )
         }
     }
-}
-
-@Composable
-private fun NumberField(
-    backgroundMask: () -> String,
-    number: String,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier,
-    ) {
-        Text(
-            text = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        color = NavigatorTheme.colors.onPrimaryContainer.copy(alpha = 0.5f),
-                    )
-                ) {
-                    append(backgroundMask())
-                }
-                append(number)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = NavigatorTheme.colors.primaryContainer)
-                .padding(NavigatorTheme.dimensions.marginPadding),
-            color = NavigatorTheme.colors.onPrimaryContainer,
-            textAlign = TextAlign.End,
-            style = NavigatorTheme.typography.displayLarge,
-        )
-    }
-
 }
