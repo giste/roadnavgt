@@ -34,7 +34,7 @@ private const val TOTAL_MAX = 9999990
 class DataStoreTripRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : TripRepository {
-    override fun getTrip(): Flow<Trip> {
+    override fun getTrips(): Flow<Trip> {
         return dataStore.data.map {
             Trip(
                 partial = it[TRIP_PARTIAL] ?: 0,

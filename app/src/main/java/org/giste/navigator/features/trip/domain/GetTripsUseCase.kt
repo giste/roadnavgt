@@ -15,8 +15,50 @@
 
 package org.giste.navigator.features.trip.domain
 
+import android.util.Log
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
+import org.giste.navigator.features.location.domain.Location
+import org.giste.navigator.features.location.domain.LocationRepository
+import kotlin.math.roundToInt
+
+private const val TAG = "GetTripsUseCase"
+
 class GetTripsUseCase(
     private val tripRepository: TripRepository,
+    private val locationRepository: LocationRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
-    operator fun invoke() = tripRepository.getTrip()
+    private val scope = CoroutineScope(dispatcher)
+
+    operator fun invoke(): Flow<Trip> = tripRepository.getTrips()
+        .onStart {
+            Log.i(TAG, "Starting location collection")
+            scope.launch { startLocationCollection() }
+        }
+        .onCompletion { scope.cancel() }
+        .flowOn(dispatcher)
+
+    private suspend fun startLocationCollection() {
+        var lastLocation: Location? = null
+
+        locationRepository.getLocations()
+            .onEach { location ->
+                lastLocation?.let {
+                    val distance = it.distanceTo(location).roundToInt()
+                    tripRepository.addDistance(distance)
+                    Log.v(TAG, "Added distance: $distance")
+                }
+                lastLocation = location
+            }.collect()
+    }
 }

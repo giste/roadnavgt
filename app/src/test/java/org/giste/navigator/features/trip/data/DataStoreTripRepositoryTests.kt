@@ -209,7 +209,7 @@ class DataStoreTripRepositoryTests {
         val actualTrips = mutableListOf<Trip>()
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            tripRepository.getTrip().toList(actualTrips)
+            tripRepository.getTrips().toList(actualTrips)
         }
 
         testDataStore.edit {

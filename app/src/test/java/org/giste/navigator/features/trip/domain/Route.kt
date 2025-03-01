@@ -13,7 +13,9 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.giste.navigator.features.location.domain
+package org.giste.navigator.features.trip.domain
+
+import org.giste.navigator.features.location.domain.Location
 
 interface Route {
     fun getDistance(): Int
@@ -27,7 +29,7 @@ object EmptyRoute : Route {
 }
 
 object TresCantosRoute : Route {
-    override fun getDistance() = 1344
+    override fun getDistance() = 1345
 
     override fun getLocations() = listOf(
         Location(latitude = 40.601367, longitude = -3.699775, altitude = 715.000000),
@@ -102,7 +104,7 @@ object TresCantosRoute : Route {
 }
 
 object NavacerradaRoute : Route {
-    override fun getDistance() = 7300
+    override fun getDistance() = 7303
 
     override fun getLocations() = listOf(
     Location(latitude = 40.737182, longitude = -4.023114, altitude = 1313.000000),

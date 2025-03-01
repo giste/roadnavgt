@@ -16,11 +16,17 @@
 package org.giste.navigator.features.location.data
 
 import android.content.Context
+import android.location.LocationManager
+import androidx.core.content.ContextCompat.getSystemService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import org.giste.navigator.ApplicationScope
+import org.giste.navigator.IoDispatcher
 import org.giste.navigator.features.location.domain.LocationRepository
 import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Singleton
@@ -30,8 +36,18 @@ import javax.inject.Singleton
 class LocationModule {
     @Singleton
     @Provides
-    fun provideLocationRepository(
-        settingsRepository: SettingsRepository,
+    fun provideLocationManager(
         @ApplicationContext context: Context,
-    ): LocationRepository = LocationManagerLocationRepository(settingsRepository, context)
+    ) = getSystemService(context, LocationManager::class.java) as LocationManager
+
+    @Singleton
+    @Provides
+    fun provideLocationRepository(
+        locationManager: LocationManager,
+        settingsRepository: SettingsRepository,
+        @ApplicationScope coroutineScope: CoroutineScope,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
+    ): LocationRepository = ManagerLocationRepository(
+        locationManager, settingsRepository, coroutineScope, dispatcher
+    )
 }

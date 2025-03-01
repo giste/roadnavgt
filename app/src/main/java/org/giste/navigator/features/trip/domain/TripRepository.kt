@@ -19,7 +19,7 @@ import androidx.annotation.IntRange
 import kotlinx.coroutines.flow.Flow
 
 interface TripRepository {
-    fun getTrip(): Flow<Trip> //TODO("Rename to getTrips()")
+    fun getTrips(): Flow<Trip>
     suspend fun incrementPartial()
     suspend fun decrementPartial()
     suspend fun resetPartial()
