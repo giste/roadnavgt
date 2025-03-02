@@ -45,6 +45,7 @@ android {
 dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.android.svg)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,8 +57,15 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material3.window.size)
     implementation(libs.androidx.material3.adaptive)
+    implementation(libs.coil.compose)
     implementation(libs.hilt.android)
     implementation(libs.paging.compose)
+    implementation(libs.vtm)
+    implementation(libs.vtm.themes)
+    implementation(libs.vtm.android)
+
+    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.22.0:natives-arm64-v8a")
+    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.22.0:natives-x86_64")
 
     ksp(libs.hilt.compiler)
 
