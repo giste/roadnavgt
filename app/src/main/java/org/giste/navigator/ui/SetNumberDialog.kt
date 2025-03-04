@@ -249,81 +249,27 @@ fun NumberPad(
             .padding(NavigatorTheme.dimensions.marginPadding),
     ) {
         NumberPadRow {
-            PadKey(
-                key = digits[7],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_7)
-            )
+            PadKey(key = digits[7], onClick = onClick, modifier = Modifier.testTag(KEY_7))
             VerticalDivider()
-            PadKey(
-                key = digits[8],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_8)
-            )
+            PadKey(key = digits[8], onClick = onClick, modifier = Modifier.testTag(KEY_8))
             VerticalDivider()
-            PadKey(
-                key = digits[9],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_9)
-            )
+            PadKey(key = digits[9], onClick = onClick, modifier = Modifier.testTag(KEY_9))
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(
-                key = digits[4],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_4)
-            )
+            PadKey(key = digits[4], onClick = onClick, modifier = Modifier.testTag(KEY_4))
             VerticalDivider()
-            PadKey(
-                key = digits[5],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_5)
-            )
+            PadKey(key = digits[5], onClick = onClick, modifier = Modifier.testTag(KEY_5))
             VerticalDivider()
-            PadKey(
-                key = digits[6],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_6)
-            )
+            PadKey(key = digits[6], onClick = onClick, modifier = Modifier.testTag(KEY_6))
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(
-                key = digits[1],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_1)
-            )
+            PadKey(key = digits[1], onClick = onClick, modifier = Modifier.testTag(KEY_1))
             VerticalDivider()
-            PadKey(
-                key = digits[2],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_2)
-            )
+            PadKey(key = digits[2], onClick = onClick, modifier = Modifier.testTag(KEY_2))
             VerticalDivider()
-            PadKey(
-                key = digits[3],
-                onClick = onClick,
-                modifier = Modifier
-                    //.weight(1f)
-                    .testTag(KEY_3)
-            )
+            PadKey(key = digits[3], onClick = onClick, modifier = Modifier.testTag(KEY_3))
         }
         HorizontalDivider()
         NumberPadRow {
@@ -339,7 +285,6 @@ fun NumberPad(
                 icon = R.drawable.backspace,
                 onClick = { onClick(DELETE) },
                 modifier = Modifier
-                    //.weight(1f)
                     .testTag(KEY_DELETE),
             )
         }
