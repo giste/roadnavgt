@@ -17,7 +17,6 @@ package org.giste.navigator.ui
 
 import android.icu.text.DecimalFormatSymbols
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTextEquals
@@ -25,11 +24,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import de.mannodermaus.junit5.compose.createComposeExtension
-import org.giste.navigator.ui.SetNumberDialogTags.ACCEPT_BUTTON
+import org.giste.navigator.ui.NavigatorDialogTags.ACCEPT_BUTTON
+import org.giste.navigator.ui.NavigatorDialogTags.TITLE
 import org.giste.navigator.ui.SetNumberDialogTags.KEY_DELETE
-import org.giste.navigator.ui.SetNumberDialogTags.TITLE
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -114,7 +112,6 @@ class SetNumberDialogInstrumentedTests {
         extension.use {
             setContent {
                 SetTestNumberDialog(
-                    showDialog = show,
                     onAccept = {
                         actualValue = it
                         show.value = false
@@ -128,12 +125,10 @@ class SetNumberDialogInstrumentedTests {
         }
 
         assertEquals(123456, actualValue)
-        assertFalse(show.value)
     }
 
     @Composable
     fun SetTestNumberDialog(
-        showDialog: MutableState<Boolean> = mutableStateOf(true),
         title: String = "Title",
         description: String = "Description",
         number: Int = 0,
@@ -143,14 +138,14 @@ class SetNumberDialogInstrumentedTests {
         decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols(Locale("en")),
     ) {
         SetNumberDialog(
-            showDialog = showDialog,
             title = title,
             description = description,
             number = number,
             numberOfIntegerDigits = numberOfIntegerDigits,
             numberOfDecimalDigits = numberOfDecimalDigits,
             onAccept = onAccept,
-            decimalFormatSymbols = decimalFormatSymbols
+            decimalFormatSymbols = decimalFormatSymbols,
+            onCancel = { }
         )
     }
 }

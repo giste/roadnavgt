@@ -13,7 +13,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.giste.navigator.features.trip
+package org.giste.navigator.features.trip.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize

@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
@@ -36,8 +38,8 @@ import org.giste.navigator.features.map.ui.MapViewer
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.ui.Roadbook
 import org.giste.navigator.features.settings.domain.Settings
-import org.giste.navigator.features.trip.TripPartial
-import org.giste.navigator.features.trip.TripTotal
+import org.giste.navigator.features.trip.ui.TripPartial
+import org.giste.navigator.features.trip.ui.TripTotal
 import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.ui.theme.NavigatorTheme
 
@@ -71,8 +73,9 @@ fun NavigatorLandscapeScreen(
     modifier: Modifier = Modifier,
 ) {
     val padding = NavigatorTheme.dimensions.marginPadding
-    val showPartialSettingDialog = remember { mutableStateOf(false) }
+    var showPartialSettingDialog by remember { mutableStateOf(false) }
 
+    // TODO("Add surface?")
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -98,7 +101,7 @@ fun NavigatorLandscapeScreen(
                 HorizontalDivider()
                 TripPartial(
                     distance = "%,.2f".format(trip.partial.div(1000f)),
-                    onClick = { showPartialSettingDialog.value = true },
+                    onClick = { showPartialSettingDialog = true },
                     modifier = Modifier
                         .weight(1.2f)
                         .padding(horizontal = padding),
@@ -125,19 +128,24 @@ fun NavigatorLandscapeScreen(
         CommandBar(
             settings = settings,
             onEvent = onEvent,
-            modifier = Modifier.weight(1f).focusProperties { canFocus = false }
+            modifier = Modifier
+                .weight(1f)
+                .focusProperties { canFocus = false }
         )
     }
 
-    if (showPartialSettingDialog.value) {
+    if (showPartialSettingDialog) {
         SetNumberDialog(
-            showDialog = showPartialSettingDialog,
             title = stringResource(R.string.set_partial_title),
             description = stringResource(R.string.set_partial_description),
             number = trip.partial.div(10),
             numberOfIntegerDigits = 3,
             numberOfDecimalDigits = 2,
-            onAccept = { onEvent(NavigatorViewModel.UiAction.SetPartial(it)) },
+            onAccept = {
+                onEvent(NavigatorViewModel.UiAction.SetPartial(it))
+                showPartialSettingDialog = false
+            },
+            onCancel = { showPartialSettingDialog = false },
         )
     }
 
