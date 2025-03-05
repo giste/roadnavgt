@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.location.domain.Location
 import org.giste.navigator.features.location.domain.LocationRepository
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.MapRepository
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.domain.RoadbookRepository
@@ -54,8 +54,8 @@ class NavigatorViewModel @Inject constructor(
             initialValue = null,
         )
 
-    private val maps: MutableStateFlow<List<Map>> = MutableStateFlow(listOf())
-    val mapState: StateFlow<List<Map>> = maps.asStateFlow()
+    private val maps: MutableStateFlow<List<MapSource>> = MutableStateFlow(listOf())
+    val mapSourceState: StateFlow<List<MapSource>> = maps.asStateFlow()
 
     val roadbookState: StateFlow<Roadbook> = roadbookRepository.getRoadbook()
         .stateIn(

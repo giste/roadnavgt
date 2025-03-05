@@ -37,7 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import org.giste.navigator.R
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.ui.MapViewer
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.ui.Roadbook
@@ -57,7 +57,7 @@ fun NavigatorLandscapePreview() {
     NavigatorTheme(darkTheme = true) {
         NavigatorLandscapeScreen(
             locationState = null,
-            mapState = listOf(),
+            mapSourceState = listOf(),
             roadbookState = Roadbook.NotLoaded,
             settings = Settings(),
             trip = Trip(),
@@ -69,7 +69,7 @@ fun NavigatorLandscapePreview() {
 @Composable
 fun NavigatorLandscapeScreen(
     locationState: Location?,
-    mapState: List<Map>,
+    mapSourceState: List<MapSource>,
     roadbookState: Roadbook,
     settings: Settings,
     trip: Trip,
@@ -114,7 +114,7 @@ fun NavigatorLandscapeScreen(
                     HorizontalDivider()
                     MapViewer(
                         location = locationState,
-                        map = mapState,
+                        mapSource = mapSourceState,
                         modifier = Modifier
                             .focusProperties { canFocus = false },
                     )

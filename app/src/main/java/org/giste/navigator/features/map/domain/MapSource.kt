@@ -15,7 +15,7 @@
 
 package org.giste.navigator.features.map.domain
 
-data class Map(
+data class MapSource(
     val name: String,
     val path: String,
 )

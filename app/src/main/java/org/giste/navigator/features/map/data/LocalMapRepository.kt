@@ -5,7 +5,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.MapRepository
 import java.io.File
 import java.io.FileOutputStream
@@ -20,13 +20,13 @@ class LocalMapRepository @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MapRepository {
     companion object {
-        val MAP_LIST = listOf<Map>(
+        val MAP_LIST = listOf<MapSource>(
             //"madrid.map",
         )
     }
 
-    override suspend fun getMaps(): List<Map> {
-        val maps = mutableListOf<Map>()
+    override suspend fun getMaps(): List<MapSource> {
+        val mapSources = mutableListOf<MapSource>()
 
         withContext(dispatcher) {
             val mapsDir = File(context.filesDir, MAPS_DIR)
@@ -35,14 +35,14 @@ class LocalMapRepository @Inject constructor(
             mapsDir.walkTopDown().forEach {
                 Log.d(TAG, "Evaluating file: ${it.path}")
                 if (it.isFile && it.extension == MAP_EXTENSION) {
-                    maps.add(Map(it.name, it.path))
+                    mapSources.add(MapSource(it.name, it.path))
                 }
             }
 
-            Log.d(TAG, "getMaps() = $maps")
+            Log.d(TAG, "getMaps() = $mapSources")
         }
 
-        return maps
+        return mapSources
     }
 
     private fun copyMap(mapName: String) {

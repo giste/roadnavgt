@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.trip.domain.Trip
@@ -35,7 +35,7 @@ fun NavigatorPreview() {
     NavigatorTheme {
         NavigatorContent(
             location = null,
-            mapState = listOf(),
+            mapSourceState = listOf(),
             roadbookState = Roadbook.NotLoaded,
             settings = Settings(),
             trip = Trip(),
@@ -50,7 +50,7 @@ fun NavigatorScreen(
 ) {
     NavigatorContent(
         location = viewModel.locationState.collectAsStateWithLifecycle().value,
-        mapState = viewModel.mapState.collectAsStateWithLifecycle().value,
+        mapSourceState = viewModel.mapSourceState.collectAsStateWithLifecycle().value,
         roadbookState = viewModel.roadbookState.collectAsStateWithLifecycle().value,
         settings = viewModel.settingsState.collectAsStateWithLifecycle().value,
         trip = viewModel.tripState.collectAsStateWithLifecycle().value,
@@ -61,7 +61,7 @@ fun NavigatorScreen(
 @Composable
 fun NavigatorContent(
     location: Location?,
-    mapState: List<Map>,
+    mapSourceState: List<MapSource>,
     roadbookState: Roadbook,
     settings: Settings,
     trip: Trip,
@@ -108,7 +108,7 @@ fun NavigatorContent(
     ) { innerPadding ->
         NavigatorLandscapeScreen(
             locationState = location,
-            mapState = mapState,
+            mapSourceState = mapSourceState,
             roadbookState = roadbookState,
             settings = settings,
             trip = trip,

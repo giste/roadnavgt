@@ -16,5 +16,5 @@
 package org.giste.navigator.features.map.domain
 
 interface MapRepository {
-    suspend fun getMaps(): List<Map>
+    suspend fun getMaps(): List<MapSource>
 }
