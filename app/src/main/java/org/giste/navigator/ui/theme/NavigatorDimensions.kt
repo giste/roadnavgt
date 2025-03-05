@@ -31,6 +31,7 @@ data class NavigatorDimensions(
     val dialogKeyIconSize: Dp,
     val dialogWidth: Dp,
     val minClickableSize: Dp,
+    val commandBarIconSize: Dp,
 )
 
 @Composable
@@ -49,6 +50,7 @@ private val navigatorExpandedDimensions = NavigatorDimensions(
     dialogKeyIconSize = 40.dp,
     dialogWidth = 750.dp,
     minClickableSize = 80.dp,
+    commandBarIconSize = 40.dp,
 )
 
 private val navigatorMediumDimensions = NavigatorDimensions(
@@ -57,6 +59,7 @@ private val navigatorMediumDimensions = NavigatorDimensions(
     dialogKeyIconSize = 32.dp,
     dialogWidth = 600.dp,
     minClickableSize = 72.dp,
+    commandBarIconSize = 32.dp,
 )
 
 private val navigatorCompactDimensions = NavigatorDimensions(
@@ -65,4 +68,5 @@ private val navigatorCompactDimensions = NavigatorDimensions(
     dialogKeyIconSize = 24.dp,
     dialogWidth = 450.dp,
     minClickableSize = 64.dp,
+    commandBarIconSize = 24.dp,
 )

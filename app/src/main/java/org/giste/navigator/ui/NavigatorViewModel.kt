@@ -15,9 +15,9 @@
 
 package org.giste.navigator.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,33 +39,37 @@ import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.features.trip.domain.TripRepository
 import javax.inject.Inject
 
+@HiltViewModel
 class NavigatorViewModel @Inject constructor(
-    private val locationRepository: LocationRepository,
+    locationRepository: LocationRepository,
     private val mapRepository: MapRepository,
     private val roadbookRepository: RoadbookRepository,
     private val settingsRepository: SettingsRepository,
     private val tripRepository: TripRepository,
 ) : ViewModel() {
-    val locationState: StateFlow<Location?> = locationRepository.getLocations().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = null,
-    )
+    val locationState: StateFlow<Location?> = locationRepository.getLocations()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+        )
 
     private val maps: MutableStateFlow<List<Map>> = MutableStateFlow(listOf())
     val mapState: StateFlow<List<Map>> = maps.asStateFlow()
 
-    val roadbookState: StateFlow<Roadbook> = roadbookRepository.getRoadbook().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = Roadbook.NotLoaded,
-    )
+    val roadbookState: StateFlow<Roadbook> = roadbookRepository.getRoadbook()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Roadbook.NotLoaded,
+        )
 
-    val settingsState: StateFlow<Settings> = settingsRepository.getSettings().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = Settings(),
-    )
+    val settingsState: StateFlow<Settings> = settingsRepository.getSettings()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Settings(),
+        )
 
     val tripState: StateFlow<Trip> = tripRepository.getTrips()
         .onStart {
@@ -74,10 +78,10 @@ class NavigatorViewModel @Inject constructor(
             }
         }
         .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = Trip(),
-    )
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Trip(),
+        )
 
     fun onAction(action: UiAction) {
         when (action) {

@@ -15,9 +15,19 @@
 
 package org.giste.navigator
 
+import android.content.Context
+import android.os.Looper
+import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +55,6 @@ annotation class MainDispatcher
 @Module
 @InstallIn(SingletonComponent::class)
 class DispatcherModule {
-
     @DefaultDispatcher
     @Provides
     fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
@@ -62,11 +71,36 @@ class DispatcherModule {
 @InstallIn(SingletonComponent::class)
 @Module
 class CoroutineScopeModule {
-
     @Singleton
     @Provides
     @ApplicationScope
     fun provideCoroutineScope(
         @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
     ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+}
+
+private const val TAG = "NavigatorModule"
+
+@InstallIn(SingletonComponent::class)
+@Module
+class NavigatorModule {
+    @Singleton
+    @Provides
+    fun provideStateDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        Log.d(TAG, "Creating DataStore")
+
+        return PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = {
+                    Log.d(TAG, "Producing new datastore data")
+                    emptyPreferences()
+                }
+            ),
+            produceFile = { context.preferencesDataStoreFile("state") }
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideLooper(): Looper = Looper.getMainLooper()
 }

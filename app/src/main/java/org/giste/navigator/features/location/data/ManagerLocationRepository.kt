@@ -18,6 +18,7 @@ package org.giste.navigator.features.location.data
 import android.annotation.SuppressLint
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Looper
 import android.util.Log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +41,7 @@ private const val TAG = "ManagerLocationRepository"
 @SuppressLint("MissingPermission")
 class ManagerLocationRepository @Inject constructor(
     private val locationManager: LocationManager,
+    private val looper: Looper,
     private val settingsRepository: SettingsRepository,
     @ApplicationScope externalScope: CoroutineScope,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
@@ -68,7 +70,8 @@ class ManagerLocationRepository @Inject constructor(
                 LocationManager.GPS_PROVIDER,
                 settings.locationMinTime,
                 settings.locationMinDistance.toFloat(),
-                locationCallback
+                locationCallback,
+                looper
             )
         }
 
@@ -76,7 +79,8 @@ class ManagerLocationRepository @Inject constructor(
             // No one listens to flow anymore
             locationManager.removeUpdates(locationCallback)
         }
-    }.shareIn(
+    }
+    .shareIn(
         scope = externalScope,
         started = SharingStarted.WhileSubscribed(5_000)
     )

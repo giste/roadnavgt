@@ -38,10 +38,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import org.giste.navigator.R
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.ui.NavigatorDialog
 import org.giste.navigator.ui.theme.NavigatorTheme
+
+// TODO("Transform in screen")
 
 @Preview(
     name = "Tab Active 3",
@@ -110,7 +113,6 @@ fun MinTimeSetting(
         TextField(
             value = minTime.toString(),
             onValueChange = { onValueChange(it.toLong()) },
-            readOnly = true,
             textStyle = MaterialTheme.typography.displaySmall.copy(
                 textAlign = TextAlign.End,
             ),
@@ -132,7 +134,6 @@ fun MinDistanceSetting(
         TextField(
             value = minDistance.toString(),
             onValueChange = { onValueChange(it.toInt()) },
-            readOnly = true,
             textStyle = MaterialTheme.typography.displaySmall.copy(
                 textAlign = TextAlign.End,
             ),

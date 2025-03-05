@@ -21,7 +21,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -57,7 +56,6 @@ private val localNavigatorColor = staticCompositionLocalOf {
     defaultNavigatorColor()
 }
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun NavigatorTheme(
     windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, // calculateFromSize(DpSize(853.dp, 485.dp)),

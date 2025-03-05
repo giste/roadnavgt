@@ -16,12 +16,15 @@
 package org.giste.navigator.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import org.giste.navigator.R
 import org.giste.navigator.features.location.domain.Location
+import org.giste.navigator.features.map.domain.Map
 import org.giste.navigator.features.map.ui.MapViewer
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.ui.Roadbook
@@ -50,7 +54,7 @@ import org.giste.navigator.ui.theme.NavigatorTheme
 )
 @Composable
 fun NavigatorLandscapePreview() {
-    NavigatorTheme {
+    NavigatorTheme(darkTheme = true) {
         NavigatorLandscapeScreen(
             locationState = null,
             mapState = listOf(),
@@ -65,7 +69,7 @@ fun NavigatorLandscapePreview() {
 @Composable
 fun NavigatorLandscapeScreen(
     locationState: Location?,
-    mapState: List<String>,
+    mapState: List<Map>,
     roadbookState: Roadbook,
     settings: Settings,
     trip: Trip,
@@ -76,62 +80,62 @@ fun NavigatorLandscapeScreen(
     var showPartialSettingDialog by remember { mutableStateOf(false) }
 
     // TODO("Add surface?")
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        Row(
-            modifier = Modifier
-                .weight(9f)
-                .fillMaxWidth()
+    Surface {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
         ) {
-            Column(
+            Row(
                 modifier = Modifier
-                    .weight(2f)
-                    .focusProperties { canFocus = false }
-                    .fillMaxHeight()
+                    .weight(9f)
+                    .fillMaxWidth()
             ) {
-                TripTotal(
-                    distance = "%,.2f".format(trip.total.div(1000f)),
-                    onClick = {},
+                Column(
                     modifier = Modifier
-                        .weight(.9f)
-                        .padding(horizontal = padding),
-                )
-                HorizontalDivider()
-                TripPartial(
-                    distance = "%,.2f".format(trip.partial.div(1000f)),
-                    onClick = { showPartialSettingDialog = true },
+                        .weight(2f)
+                        .focusProperties { canFocus = false }
+                        .fillMaxHeight()
+                ) {
+                    TripTotal(
+                        distance = "%,.2f".format(trip.total.div(1000f)),
+                        onClick = {},
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .padding(horizontal = padding),
+                    )
+                    HorizontalDivider()
+                    TripPartial(
+                        distance = "%,.2f".format(trip.partial.div(1000f)),
+                        onClick = { showPartialSettingDialog = true },
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .padding(horizontal = padding),
+                    )
+                    HorizontalDivider()
+                    MapViewer(
+                        location = locationState,
+                        map = mapState,
+                        modifier = Modifier
+                            .focusProperties { canFocus = false },
+                    )
+                }
+                VerticalDivider()
+                Roadbook(
+                    roadbookState = roadbookState,
+                    onScroll = { page, offset ->
+                        onEvent(NavigatorViewModel.UiAction.SaveScroll(page, offset))
+                    },
                     modifier = Modifier
-                        .weight(1.2f)
-                        .padding(horizontal = padding),
-                )
-                HorizontalDivider()
-                MapViewer(
-                    location = locationState,
-                    map = mapState,
-                    modifier = Modifier
-                        .weight(5f)
-                        .focusProperties { canFocus = false },
+                        .weight(5f),
                 )
             }
-            VerticalDivider()
-            Roadbook(
-                roadbookState = roadbookState,
-                onScroll = { page, offset ->
-                    onEvent(NavigatorViewModel.UiAction.SaveScroll(page, offset))
-                },
+            CommandBar(
+                settings = settings,
+                onEvent = onEvent,
                 modifier = Modifier
-                    .weight(5f),
+                    .focusProperties { canFocus = false }
             )
         }
-        CommandBar(
-            settings = settings,
-            onEvent = onEvent,
-            modifier = Modifier
-                .weight(1f)
-                .focusProperties { canFocus = false }
-        )
     }
 
     if (showPartialSettingDialog) {

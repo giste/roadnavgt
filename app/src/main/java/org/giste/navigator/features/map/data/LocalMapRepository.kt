@@ -20,8 +20,8 @@ class LocalMapRepository @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MapRepository {
     companion object {
-        val MAP_LIST = listOf(
-            "madrid.map",
+        val MAP_LIST = listOf<Map>(
+            //"madrid.map",
         )
     }
 
@@ -79,7 +79,7 @@ class LocalMapRepository @Inject constructor(
         createMapsDir()
 
         MAP_LIST.forEach {
-            if (!mapExists(it)) copyMap(it)
+            if (!mapExists(it.path)) copyMap(it.path)
         }
     }
 

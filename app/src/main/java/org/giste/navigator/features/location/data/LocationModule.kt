@@ -17,6 +17,7 @@ package org.giste.navigator.features.location.data
 
 import android.content.Context
 import android.location.LocationManager
+import android.os.Looper
 import androidx.core.content.ContextCompat.getSystemService
 import dagger.Module
 import dagger.Provides
@@ -44,10 +45,11 @@ class LocationModule {
     @Provides
     fun provideLocationRepository(
         locationManager: LocationManager,
+        looper: Looper,
         settingsRepository: SettingsRepository,
         @ApplicationScope coroutineScope: CoroutineScope,
         @IoDispatcher dispatcher: CoroutineDispatcher,
     ): LocationRepository = ManagerLocationRepository(
-        locationManager, settingsRepository, coroutineScope, dispatcher
+        locationManager, looper, settingsRepository, coroutineScope, dispatcher
     )
 }

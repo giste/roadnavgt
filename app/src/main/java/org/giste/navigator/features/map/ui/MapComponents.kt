@@ -33,6 +33,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.giste.navigator.features.location.domain.Location
+import org.giste.navigator.features.map.domain.Map
 import org.oscim.android.MapView
 import org.oscim.backend.CanvasAdapter
 import org.oscim.layers.tile.buildings.BuildingLayer
@@ -48,7 +49,7 @@ import org.oscim.tiling.source.mapfile.MultiMapFileTileSource
 
 @Composable
 fun MapViewer(
-    map: List<String>,
+    map: List<Map>,
     location: Location?,
     modifier: Modifier = Modifier,
 ) {
@@ -83,7 +84,7 @@ fun MapViewer(
 
 @Composable
 fun VtmMapView(
-    maps: List<String>,
+    maps: List<Map>,
     location: Location?,
     modifier: Modifier = Modifier
 ) {
@@ -103,7 +104,7 @@ fun VtmMapView(
                 val tileSource = MultiMapFileTileSource()
                 maps.forEach {
                     val map = MapFileTileSource()
-                    map.setMapFile(it)
+                    map.setMapFile(it.path)
                     val result = tileSource.add(map)
 
                     Log.d("VtmMapView", "Added map: $it with result: $result")

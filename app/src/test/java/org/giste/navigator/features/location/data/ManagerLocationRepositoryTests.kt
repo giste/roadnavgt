@@ -17,6 +17,7 @@ package org.giste.navigator.features.location.data
 
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Looper
 import android.util.Log
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -53,6 +54,7 @@ class ManagerLocationRepositoryTests {
     private val locationManager: LocationManager = mockk<LocationManager>().apply {
         coEvery { removeUpdates(any<LocationListener>()) } returns Unit
     }
+    private val looper: Looper = mockk(relaxed = true)
     private val scope = CoroutineScope(SupervisorJob())
 
     @AfterEach
@@ -66,12 +68,13 @@ class ManagerLocationRepositoryTests {
         val listenerSlot = slot<LocationListener>()
         coEvery {
             locationManager.requestLocationUpdates(
-                any<String>(), any<Long>(), any<Float>(), capture(listenerSlot)
+                any<String>(), any<Long>(), any<Float>(), capture(listenerSlot), any<Looper>()
             )
         } returns Unit
 
         val locationRepository = ManagerLocationRepository(
             locationManager = locationManager,
+            looper = looper,
             settingsRepository = settingRepository,
             externalScope = scope,
             dispatcher = UnconfinedTestDispatcher(testScheduler)

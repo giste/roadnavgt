@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Roadbook Navigator GT</string>
 
+    <!-- Permissions -->
+    <string name="permissions_title">Permissions</string>
+    <string name="permissions_request">This application needs location permissions to work. Please grant fine location permission.</string>
+
     <!-- Set partial -->
     <string name="set_partial_title">Set Partial</string>
     <string name="set_partial_description">Set new value for partial</string>
