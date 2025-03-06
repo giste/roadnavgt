@@ -65,8 +65,8 @@ dependencies {
     implementation(libs.vtm.themes)
     implementation(libs.vtm.android)
 
-    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.22.0:natives-arm64-v8a")
-    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.22.0:natives-x86_64")
+    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.24.0:natives-arm64-v8a")
+    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.24.0:natives-x86_64")
 
     ksp(libs.hilt.compiler)
 

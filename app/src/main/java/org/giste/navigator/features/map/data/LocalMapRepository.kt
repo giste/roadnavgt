@@ -20,8 +20,10 @@ class LocalMapRepository @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MapRepository {
     companion object {
-        val MAP_LIST = listOf<MapSource>(
-            //"madrid.map",
+        val MAP_LIST = listOf(
+            //MapSource(name = "World", path = "world.map"),
+            //MapSource(name = "Madrid", path = "madrid.map"),
+            MapSource(name = "Spain", path = "spain.map")
         )
     }
 
