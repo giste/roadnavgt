@@ -87,6 +87,9 @@ fun VtmMapView(
                 // Render theme
                 setTheme(VtmThemes.DEFAULT)
 
+                // Set centar at the bottom
+                viewport().mapViewCenterY = 0.6f
+
                 // Initial position, scale and tilt
                 val initialPosition = mapPosition
                 initialPosition
@@ -106,7 +109,7 @@ fun VtmMapView(
                 Log.d("VtmMapView", "Moving to $location")
                 val newPosition = mapPosition
                 newPosition.setPosition(location.latitude, location.longitude)
-                location.bearing?.let { newPosition.setBearing(location.bearing) }
+                location.bearing?.let { newPosition.setBearing(360f - location.bearing) }
                 this.animator().animateTo(newPosition)
             }
         }
