@@ -35,6 +35,7 @@ import org.giste.navigator.features.roadbook.domain.RoadbookRepository
 import org.giste.navigator.features.roadbook.domain.Scroll
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.domain.SettingsRepository
+import org.giste.navigator.features.trip.domain.GetTripsUseCase
 import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.features.trip.domain.TripRepository
 import javax.inject.Inject
@@ -46,6 +47,7 @@ class NavigatorViewModel @Inject constructor(
     private val roadbookRepository: RoadbookRepository,
     private val settingsRepository: SettingsRepository,
     private val tripRepository: TripRepository,
+    private val getTripsUseCase: GetTripsUseCase,
 ) : ViewModel() {
     val locationState: StateFlow<Location?> = locationRepository.getLocations()
         .stateIn(
@@ -71,7 +73,7 @@ class NavigatorViewModel @Inject constructor(
             initialValue = Settings(),
         )
 
-    val tripState: StateFlow<Trip> = tripRepository.getTrips()
+    val tripState: StateFlow<Trip> = getTripsUseCase()
         .onStart {
             viewModelScope.launch {
                 maps.update { mapRepository.getMaps() }

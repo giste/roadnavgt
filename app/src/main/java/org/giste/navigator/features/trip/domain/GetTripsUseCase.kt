@@ -27,16 +27,18 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import org.giste.navigator.DefaultDispatcher
 import org.giste.navigator.features.location.domain.Location
 import org.giste.navigator.features.location.domain.LocationRepository
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
 private const val TAG = "GetTripsUseCase"
 
-class GetTripsUseCase(
+class GetTripsUseCase @Inject constructor(
     private val tripRepository: TripRepository,
     private val locationRepository: LocationRepository,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     private val scope = CoroutineScope(dispatcher)
 
