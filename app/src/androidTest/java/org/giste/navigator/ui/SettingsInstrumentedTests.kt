@@ -15,6 +15,7 @@
 
 package org.giste.navigator.ui
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.click
@@ -81,7 +82,7 @@ class SettingsInstrumentedTests {
             setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
             onNode(hasProgressBarRangeInfo(ProgressBarRangeInfo(19f, 15f..20f, 4)))
-                .performTouchInput { this.click(this.center) }
+                .performTouchInput { this.click(Offset(this.centerX - 1f, this.centerY)) }
 
             verify { viewModel.onAction(SettingsViewModel.UiAction.OnMapZoomLevelChange(17)) }
         }
