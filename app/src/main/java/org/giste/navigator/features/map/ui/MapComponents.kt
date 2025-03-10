@@ -32,6 +32,7 @@ import org.giste.navigator.features.map.domain.MapSource
 fun MapViewer(
     mapSource: List<MapSource>,
     location: Location?,
+    zoomLevel: Int,
     modifier: Modifier = Modifier,
 ) {
     Log.d("Map", "Location: $location")
@@ -57,6 +58,7 @@ fun MapViewer(
             VtmMapView(
                 mapSources = mapSource,
                 location = location,
+                zoomLevel = zoomLevel,
                 modifier = modifier,
             )
         }

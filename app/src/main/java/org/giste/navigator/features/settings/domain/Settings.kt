@@ -16,6 +16,7 @@
 package org.giste.navigator.features.settings.domain
 
 data class Settings(
+    val mapZoomLevel: Int = 19,
     val locationMinTime: Long = 1_000L,
     val locationMinDistance: Int = 10,
 )

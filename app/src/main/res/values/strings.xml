@@ -27,4 +27,18 @@
     <string name="settings_min_time_label">Min time between locations (ms):</string>
     <string name="settings_min_distance_label">Min distance between locations (m):</string>
 
+    <!-- Settings screen -->
+    <string name="settings_screen_title">Settings</string>
+
+    <!-- Settings -->
+    <string name="settings_basic_group_label">Basic settings</string>
+    <string name="settings_zoom_level_label">Default zoom level</string>
+    <string name="settings_zoom_level_description">Map zoom level when application is started</string>
+    <string name="settings_advanced_group_label">Advanced settings</string>
+    <string name="settings_advanced_warning">Do not modify if you do not know what you are doing</string>
+    <string name="settings_minimum_time_label">Location Minimum Time</string>
+    <string name="settings_minimum_time_description">Minimum time between GPS locations in milliseconds</string>
+    <string name="settings_minimum_distance_label">Location Minimum Distance</string>
+    <string name="settings_minimum_distance_description">Minimum distance between GPS locations in meters</string>
+
 </resources>

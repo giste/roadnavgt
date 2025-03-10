@@ -12,7 +12,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
 import org.giste.navigator.ui.ManagePermissions
-import org.giste.navigator.ui.NavigatorScreen
+import org.giste.navigator.ui.Navigator
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 @AndroidEntryPoint
@@ -35,8 +35,9 @@ class MainActivity : ComponentActivity() {
                 )
 
                 ManagePermissions(multiplePermission)
+
                 if (multiplePermission.allPermissionsGranted) {
-                    NavigatorScreen()
+                    Navigator()
                 }
             }
         }
@@ -44,3 +45,4 @@ class MainActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 }
+

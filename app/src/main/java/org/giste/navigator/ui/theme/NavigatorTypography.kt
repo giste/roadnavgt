@@ -37,70 +37,70 @@ fun navigatorTypography(windowSizeClass: WindowSizeClass) =
 fun defaultNavigatorTypography() = navigatorTypographyExpanded
 
 private val navigatorTypographyExpanded = Typography(
-    displayLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 64.sp,
-    ),
-    displayMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 51.sp,
-    ),
-    displaySmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 40.sp,
-    ),
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 45.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 25.sp
-    ),
+//    displayLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 64.sp,
+//    ),
+//    displayMedium = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 51.sp,
+//    ),
+//    displaySmall = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 40.sp,
+//    ),
+//    titleLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 45.sp
+//    ),
+//    bodyLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 25.sp
+//    ),
 )
 
 private val navigatorTypographyMedium = Typography(
-    displayLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 51.sp,
-    ),
-    displayMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 40.sp,
-    ),
-    displaySmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 32.sp,
-    ),
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 40.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 20.sp
-    ),
+//    displayLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 51.sp,
+//    ),
+//    displayMedium = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 40.sp,
+//    ),
+//    displaySmall = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 32.sp,
+//    ),
+//    titleLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 40.sp
+//    ),
+//    bodyLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 20.sp
+//    ),
 )
 
 private val navigatorTypographyCompact = Typography(
-    displayLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 40.sp,
-    ),
-    displayMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 32.sp,
-    ),
-    displaySmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 25.sp,
-    ),
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 36.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontSize = 16.sp
-    ),
+//    displayLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 40.sp,
+//    ),
+//    displayMedium = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 32.sp,
+//    ),
+//    displaySmall = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 25.sp,
+//    ),
+//    titleLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 36.sp
+//    ),
+//    bodyLarge = TextStyle(
+//        fontFamily = FontFamily.Default,
+//        fontSize = 16.sp
+//    ),
 )
