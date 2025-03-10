@@ -29,17 +29,25 @@ import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Inject
 
 private const val TAG = "DataStoreSettingsRepository"
-private val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")
-private val LOCATION_MIN_DISTANCE = intPreferencesKey("SETTINGS_LOCATION_MIN_DISTANCE")
+//private val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")
+//private val LOCATION_MIN_DISTANCE = intPreferencesKey("SETTINGS_LOCATION_MIN_DISTANCE")
+//private val MAP_ZOOM_LEVEL = intPreferencesKey("SETTINGS_MAP_ZOOM_LEVEL")
 
 class DataStoreSettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
+    companion object {
+        val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")
+        val LOCATION_MIN_DISTANCE = intPreferencesKey("SETTINGS_LOCATION_MIN_DISTANCE")
+        val MAP_ZOOM_LEVEL = intPreferencesKey("SETTINGS_MAP_ZOOM_LEVEL")
+    }
+
     override fun getSettings(): Flow<Settings> {
         return dataStore.data.map {
             Log.d(TAG, "Reading settings")
 
             Settings(
+                mapZoomLevel = it[MAP_ZOOM_LEVEL] ?: 19,
                 locationMinTime = it[LOCATION_MIN_TIME] ?: 1_000L,
                 locationMinDistance = it[LOCATION_MIN_DISTANCE] ?: 10,
             )
@@ -50,6 +58,7 @@ class DataStoreSettingsRepository @Inject constructor(
         Log.d(TAG, "Saving $settings")
 
         dataStore.edit {
+            it[MAP_ZOOM_LEVEL] = settings.mapZoomLevel
             it[LOCATION_MIN_TIME] = settings.locationMinTime
             it[LOCATION_MIN_DISTANCE] = settings.locationMinDistance
         }

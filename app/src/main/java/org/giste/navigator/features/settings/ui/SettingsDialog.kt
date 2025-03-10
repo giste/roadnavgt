@@ -76,7 +76,7 @@ fun SettingsDialog(
     NavigatorDialog(
         title = title,
         onCancel = onCancel,
-        onAccept = { onAccept(Settings(minTime, minDistance)) },
+        onAccept = { onAccept(Settings(19, minTime, minDistance)) },
         width = NavigatorTheme.dimensions.dialogWidth,
         height = 400.dp,
         innerPadding = NavigatorTheme.dimensions.marginPadding,
