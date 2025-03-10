@@ -20,8 +20,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Inject
@@ -30,11 +32,12 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
+    val currentSettings = runBlocking { settingsRepository.getSettings().first() }
     val settingsState: StateFlow<Settings> = settingsRepository.getSettings()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = Settings(),
+            initialValue = currentSettings,
         )
 
     fun onAction(uiAction: UiAction) = when(uiAction) {

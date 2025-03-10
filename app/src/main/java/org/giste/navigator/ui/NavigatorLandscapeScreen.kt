@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,9 +41,9 @@ import org.giste.navigator.features.map.ui.MapViewer
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.ui.Roadbook
 import org.giste.navigator.features.settings.domain.Settings
+import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.features.trip.ui.TripPartial
 import org.giste.navigator.features.trip.ui.TripTotal
-import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 @Preview(
@@ -62,6 +61,7 @@ fun NavigatorLandscapePreview() {
             settings = Settings(),
             trip = Trip(),
             onEvent = {},
+            navigateToSettings = {},
         )
     }
 }
@@ -74,68 +74,67 @@ fun NavigatorLandscapeScreen(
     settings: Settings,
     trip: Trip,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
+    navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val padding = NavigatorTheme.dimensions.marginPadding
     var showPartialSettingDialog by remember { mutableStateOf(false) }
 
-    // TODO("Add surface?")
-    Surface {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        Row(
+            modifier = Modifier
+                .weight(9f)
+                .fillMaxWidth()
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .weight(9f)
-                    .fillMaxWidth()
+                    .weight(2f)
+                    .focusProperties { canFocus = false }
+                    .fillMaxHeight()
             ) {
-                Column(
+                TripTotal(
+                    distance = "%,.2f".format(trip.total.div(1000f)),
+                    onClick = {},
                     modifier = Modifier
-                        .weight(2f)
-                        .focusProperties { canFocus = false }
-                        .fillMaxHeight()
-                ) {
-                    TripTotal(
-                        distance = "%,.2f".format(trip.total.div(1000f)),
-                        onClick = {},
-                        modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .padding(horizontal = padding),
-                    )
-                    HorizontalDivider()
-                    TripPartial(
-                        distance = "%,.2f".format(trip.partial.div(1000f)),
-                        onClick = { showPartialSettingDialog = true },
-                        modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .padding(horizontal = padding),
-                    )
-                    HorizontalDivider()
-                    MapViewer(
-                        location = locationState,
-                        mapSource = mapSourceState,
-                        modifier = Modifier
-                            .focusProperties { canFocus = false },
-                    )
-                }
-                VerticalDivider()
-                Roadbook(
-                    roadbookState = roadbookState,
-                    onScroll = { page, offset ->
-                        onEvent(NavigatorViewModel.UiAction.SaveScroll(page, offset))
-                    },
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = padding),
+                )
+                HorizontalDivider()
+                TripPartial(
+                    distance = "%,.2f".format(trip.partial.div(1000f)),
+                    onClick = { showPartialSettingDialog = true },
                     modifier = Modifier
-                        .weight(5f),
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = padding),
+                )
+                HorizontalDivider()
+                MapViewer(
+                    location = locationState,
+                    mapSource = mapSourceState,
+                    zoomLevel = settings.mapZoomLevel,
+                    modifier = Modifier
+                        .focusProperties { canFocus = false },
                 )
             }
-            CommandBar(
-                settings = settings,
-                onEvent = onEvent,
+            VerticalDivider()
+            Roadbook(
+                roadbookState = roadbookState,
+                onScroll = { page, offset ->
+                    onEvent(NavigatorViewModel.UiAction.SaveScroll(page, offset))
+                },
                 modifier = Modifier
-                    .focusProperties { canFocus = false }
+                    .weight(5f),
             )
         }
+        CommandBar(
+            onEvent = onEvent,
+            navigateToSettings = navigateToSettings,
+            modifier = Modifier
+                .focusProperties { canFocus = false }
+        )
     }
 
     if (showPartialSettingDialog) {

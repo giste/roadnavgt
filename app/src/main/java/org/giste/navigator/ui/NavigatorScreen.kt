@@ -1,10 +1,8 @@
 package org.giste.navigator.ui
 
 import android.util.Log
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEventType
@@ -35,39 +33,43 @@ fun NavigatorPreview() {
     NavigatorTheme {
         NavigatorContent(
             location = null,
-            mapSourceState = listOf(),
-            roadbookState = Roadbook.NotLoaded,
+            mapSource = listOf(),
+            roadbook = Roadbook.NotLoaded,
             settings = Settings(),
             trip = Trip(),
             onEvent = {},
+            navigateToSettings = {}
         )
     }
 }
 
 @Composable
 fun NavigatorScreen(
-    viewModel: NavigatorViewModel = viewModel()
+    viewModel: NavigatorViewModel = viewModel(),
+    navigateToSettings: () -> Unit,
 ) {
     NavigatorContent(
         location = viewModel.locationState.collectAsStateWithLifecycle().value,
-        mapSourceState = viewModel.mapSourceState.collectAsStateWithLifecycle().value,
-        roadbookState = viewModel.roadbookState.collectAsStateWithLifecycle().value,
+        mapSource = viewModel.mapSourceState.collectAsStateWithLifecycle().value,
+        roadbook = viewModel.roadbookState.collectAsStateWithLifecycle().value,
         settings = viewModel.settingsState.collectAsStateWithLifecycle().value,
         trip = viewModel.tripState.collectAsStateWithLifecycle().value,
         onEvent = viewModel::onAction,
+        navigateToSettings = navigateToSettings,
     )
 }
 
 @Composable
 fun NavigatorContent(
     location: Location?,
-    mapSourceState: List<MapSource>,
-    roadbookState: Roadbook,
+    mapSource: List<MapSource>,
+    roadbook: Roadbook,
     settings: Settings,
     trip: Trip,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
+    navigateToSettings: () -> Unit,
 ) {
-    Scaffold(
+    Surface(
         modifier = Modifier
             .testTag(NAVIGATION_CONTENT)
             .fillMaxSize()
@@ -105,19 +107,15 @@ fun NavigatorContent(
                     false
                 }
             },
-    ) { innerPadding ->
+    ) {
         NavigatorLandscapeScreen(
             locationState = location,
-            mapSourceState = mapSourceState,
-            roadbookState = roadbookState,
+            mapSourceState = mapSource,
+            roadbookState = roadbook,
             settings = settings,
             trip = trip,
             onEvent = onEvent,
-            modifier = Modifier
-                .padding(innerPadding)
-                // Consume this insets so that it's not applied again
-                // when using safeDrawing in the hierarchy below
-                .consumeWindowInsets(innerPadding)
+            navigateToSettings = navigateToSettings,
         )
     }
 }

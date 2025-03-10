@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.junit.plugin)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization.plugin)
     alias(libs.plugins.ksp)
 }
 
@@ -58,8 +59,10 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material3.window.size)
     implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.hilt.android)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.paging.compose)
     implementation(libs.vtm)
     implementation(libs.vtm.themes)

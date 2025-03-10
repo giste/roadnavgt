@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.giste.navigator.R
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.ui.LocationMinDistanceSetting
@@ -57,18 +58,21 @@ fun SettingsScreenPreview() {
     NavigatorTheme {
         SettingsContent(
             settings = Settings(),
-            uiAction = { },
+            uiAction = {},
+            navigateBack = {}
         )
     }
 }
 
 @Composable
 fun SettingsScreen(
-    settingsViewModel: SettingsViewModel,
+    settingsViewModel: SettingsViewModel = viewModel(),
+    navigateBack: () -> Unit,
 ) {
     SettingsContent(
         settings = settingsViewModel.settingsState.collectAsStateWithLifecycle().value,
         uiAction = settingsViewModel::onAction,
+        navigateBack = navigateBack,
     )
 }
 
@@ -76,6 +80,7 @@ fun SettingsScreen(
 fun SettingsContent(
     settings: Settings,
     uiAction: (SettingsViewModel.UiAction) -> Unit,
+    navigateBack: () -> Unit,
 ) {
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -120,7 +125,7 @@ fun SettingsContent(
             }
             ScreenBottomBar(
                 title = stringResource(R.string.settings_screen_title),
-                onBackClick = {}
+                onBackClick = { navigateBack() }
             )
         }
     }

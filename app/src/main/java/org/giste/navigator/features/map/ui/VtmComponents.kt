@@ -46,6 +46,7 @@ import org.oscim.tiling.source.mapfile.MultiMapFileTileSource
 fun VtmMapView(
     mapSources: List<MapSource>,
     location: Location?,
+    zoomLevel: Int,
     modifier: Modifier = Modifier
 ) {
     val mapView = rememberMapViewWithLifecycle()
@@ -70,11 +71,6 @@ fun VtmMapView(
                     Log.d("VtmMapView", "Added map: $it with result: $result")
                 }
 
-//                val mapSource = mapSources.first { it.name == "spain.map" }
-//                val tileSource = MapFileTileSource()
-//                val result = tileSource.setMapFile(mapSource.path)
-//                Log.d("VtmMapView", "Added map: $it with result: $result")
-
                 // Vector layer
                 val tileLayer: VectorTileLayer = setBaseMap(tileSource)
 
@@ -94,7 +90,7 @@ fun VtmMapView(
                 val initialPosition = mapPosition
                 initialPosition
                     .setPosition(40.60092, -3.70806)
-                .setScale((1 shl 19).toDouble())
+                .setScale((1 shl zoomLevel).toDouble())
                 .setTilt(60.0f)
                 mapPosition = initialPosition
                 Log.d("VtmMapView", "Initial map position: $initialPosition")

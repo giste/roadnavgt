@@ -41,7 +41,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SettingsScreenInstrumentedTests {
+class SettingsInstrumentedTests {
     @OptIn(ExperimentalTestApi::class)
     @RegisterExtension
     @JvmField
@@ -59,7 +59,7 @@ class SettingsScreenInstrumentedTests {
     @Test
     fun displays_settings_correctly() {
         extension.use {
-            setContent { SettingsScreen(viewModel) }
+            setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
             waitUntilExactlyOneExists(hasText("1.000"))
             waitUntilExactlyOneExists(hasText("10"))
@@ -78,7 +78,7 @@ class SettingsScreenInstrumentedTests {
     @Test
     fun saves_zoom_level_when_changed() {
         extension.use {
-            setContent { SettingsScreen(viewModel) }
+            setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
             onNode(hasProgressBarRangeInfo(ProgressBarRangeInfo(19f, 15f..20f, 4)))
                 .performTouchInput { this.click(this.center) }
@@ -90,7 +90,7 @@ class SettingsScreenInstrumentedTests {
     @Test
     fun saves_min_distance_when_changed() {
         extension.use {
-            setContent { SettingsScreen(viewModel) }
+            setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
             waitUntilExactlyOneExists(hasText("10"))
             onNodeWithText("10").performClick()
@@ -107,7 +107,7 @@ class SettingsScreenInstrumentedTests {
     @Test
     fun saves_min_time_when_changed() {
         extension.use {
-            setContent { SettingsScreen(viewModel) }
+            setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
             waitUntilExactlyOneExists(hasText("1.000"))
             onNodeWithText("1.000").performClick()
