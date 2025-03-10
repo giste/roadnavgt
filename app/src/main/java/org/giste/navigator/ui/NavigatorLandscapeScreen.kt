@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -31,7 +32,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import org.giste.navigator.R
@@ -60,6 +60,7 @@ fun NavigatorLandscapePreview() {
             roadbookState = Roadbook.NotLoaded,
             settings = Settings(),
             trip = Trip(),
+            roadbookScrollState = LazyListState(),
             onEvent = {},
             navigateToSettings = {},
         )
@@ -73,6 +74,7 @@ fun NavigatorLandscapeScreen(
     roadbookState: Roadbook,
     settings: Settings,
     trip: Trip,
+    roadbookScrollState: LazyListState,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -92,7 +94,6 @@ fun NavigatorLandscapeScreen(
             Column(
                 modifier = Modifier
                     .weight(2f)
-                    .focusProperties { canFocus = false }
                     .fillMaxHeight()
             ) {
                 TripTotal(
@@ -115,16 +116,15 @@ fun NavigatorLandscapeScreen(
                     location = locationState,
                     mapSource = mapSourceState,
                     zoomLevel = settings.mapZoomLevel,
-                    modifier = Modifier
-                        .focusProperties { canFocus = false },
                 )
             }
             VerticalDivider()
             Roadbook(
-                roadbookState = roadbookState,
+                roadbook = roadbookState,
                 onScroll = { page, offset ->
                     onEvent(NavigatorViewModel.UiAction.SaveScroll(page, offset))
                 },
+                roadbookScrollState = roadbookScrollState,
                 modifier = Modifier
                     .weight(5f),
             )
@@ -132,8 +132,6 @@ fun NavigatorLandscapeScreen(
         CommandBar(
             onEvent = onEvent,
             navigateToSettings = navigateToSettings,
-            modifier = Modifier
-                .focusProperties { canFocus = false }
         )
     }
 
@@ -151,5 +149,4 @@ fun NavigatorLandscapeScreen(
             onCancel = { showPartialSettingDialog = false },
         )
     }
-
 }

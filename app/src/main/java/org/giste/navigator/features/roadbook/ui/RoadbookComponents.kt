@@ -16,31 +16,18 @@
 package org.giste.navigator.features.roadbook.ui
 
 import android.graphics.Bitmap
-import android.util.Log
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.NativeKeyEvent
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.nativeKeyCode
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -50,19 +37,18 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.launch
 import org.giste.navigator.R
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.domain.RoadbookPage
-import org.giste.navigator.features.roadbook.domain.Scroll
 
 @Composable
 fun Roadbook(
-    roadbookState: Roadbook,
+    roadbook: Roadbook,
     onScroll: (Int, Int) -> Unit,
+    roadbookScrollState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
-    when (roadbookState) {
+    when (roadbook) {
         is Roadbook.NotLoaded -> {
             Text(
                 text = stringResource(R.string.roadbook_load_message),
@@ -76,7 +62,7 @@ fun Roadbook(
         }
 
         is Roadbook.Loaded -> {
-            val pages = roadbookState.pages.collectAsLazyPagingItems()
+            val pages = roadbook.pages.collectAsLazyPagingItems()
 
             when (val loadState = pages.loadState.refresh) {
                 is LoadState.Error -> {
@@ -108,8 +94,8 @@ fun Roadbook(
                     RoadbookViewer(
                         pages = pages,
                         modifier = modifier,
-                        initialScroll = roadbookState.initialScroll,
                         onScrollFinish = onScroll,
+                        scrollState = roadbookScrollState,
                     )
                 }
             }
@@ -121,19 +107,9 @@ fun Roadbook(
 fun RoadbookViewer(
     pages: LazyPagingItems<RoadbookPage>,
     modifier: Modifier = Modifier,
-    initialScroll: Scroll = Scroll(),
     onScrollFinish: (Int, Int) -> Unit = { _, _ -> },
-    keyMoveUpCode: Int = NativeKeyEvent.KEYCODE_DPAD_UP,
-    keyMoveDownCode: Int = NativeKeyEvent.KEYCODE_DPAD_DOWN,
-    pixelsToMove: Float = 317.0f
+    scrollState: LazyListState,
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    val focusRequester = remember { FocusRequester() }
-    val scrollState = rememberLazyListState(
-        initialFirstVisibleItemIndex = initialScroll.pageIndex,
-        initialFirstVisibleItemScrollOffset = initialScroll.pageOffset,
-    )
-
     LaunchedEffect(scrollState.isScrollInProgress) {
         if (!scrollState.isScrollInProgress) {
             onScrollFinish(
@@ -143,55 +119,8 @@ fun RoadbookViewer(
         }
     }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
-
     LazyColumn(
-        modifier = modifier
-            .focusable()
-            .focusRequester(focusRequester)
-            .onKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyUp) {
-                    when (keyEvent.key.nativeKeyCode) {
-                        keyMoveUpCode -> {
-                            Log.d(
-                                "RoadbookViewer",
-                                "Move up key event(${keyEvent.key.nativeKeyCode}) processed"
-                            )
-                            coroutineScope.launch {
-                                scrollState.animateScrollBy(pixelsToMove)
-                            }
-                            return@onKeyEvent true
-                        }
-
-                        keyMoveDownCode -> {
-                            Log.d(
-                                "RoadbookViewer",
-                                "Move down key event(${keyEvent.key.nativeKeyCode}) processed"
-                            )
-                            coroutineScope.launch {
-                                scrollState.animateScrollBy(-pixelsToMove)
-                            }
-                            return@onKeyEvent true
-                        }
-
-                        else -> {
-                            Log.d(
-                                "RoadbookViewer",
-                                "KeyEvent(${keyEvent.type}, ${keyEvent.key.nativeKeyCode}) not processed"
-                            )
-                            return@onKeyEvent false
-                        }
-                    }
-                } else {
-                    Log.d(
-                        "RoadbookViewer",
-                        "KeyEvent(${keyEvent.type}, ${keyEvent.key.nativeKeyCode}) not processed"
-                    )
-                    return@onKeyEvent false
-                }
-            },
+        modifier = modifier,
         state = scrollState,
     ) {
         items(

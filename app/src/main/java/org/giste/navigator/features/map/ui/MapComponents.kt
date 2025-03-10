@@ -23,7 +23,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.text.style.TextAlign
 import org.giste.navigator.features.location.domain.Location
 import org.giste.navigator.features.map.domain.MapSource
@@ -53,7 +52,7 @@ fun MapViewer(
         )
     } else {
         Surface(
-            modifier = modifier.fillMaxSize().focusProperties { canFocus = false },
+            modifier = modifier.fillMaxSize(),
         ) {
             VtmMapView(
                 mapSources = mapSource,
