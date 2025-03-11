@@ -71,6 +71,23 @@ fun MapZoomLevelSetting(
 }
 
 @Composable
+fun PixelsToMoveRoadbookSetting(
+    pixelsToMove: Int,
+    onValueChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NumberSetting(
+        number = pixelsToMove,
+        onValueChange = onValueChange,
+        numberOfIntegerDigits = 3,
+        numberOfFractionalDigits = 0,
+        label = stringResource(R.string.settings_pixels_to_move_label),
+        description = stringResource(R.string.settings_pixels_to_move_description),
+        modifier = modifier,
+    )
+}
+
+@Composable
 fun LocationMinDistanceSetting(
     minDistance: Int,
     onValueChange: (Int) -> Unit,

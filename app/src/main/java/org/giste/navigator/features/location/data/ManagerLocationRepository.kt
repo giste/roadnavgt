@@ -68,8 +68,8 @@ class ManagerLocationRepository @Inject constructor(
         withContext(dispatcher) {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
-                settings.locationMinTime,
-                settings.locationMinDistance.toFloat(),
+                settings.millisecondsBetweenLocations,
+                settings.metersBetweenLocations.toFloat(),
                 locationCallback,
                 looper
             )

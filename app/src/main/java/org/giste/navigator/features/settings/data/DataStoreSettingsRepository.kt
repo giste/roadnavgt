@@ -29,9 +29,6 @@ import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Inject
 
 private const val TAG = "DataStoreSettingsRepository"
-//private val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")
-//private val LOCATION_MIN_DISTANCE = intPreferencesKey("SETTINGS_LOCATION_MIN_DISTANCE")
-//private val MAP_ZOOM_LEVEL = intPreferencesKey("SETTINGS_MAP_ZOOM_LEVEL")
 
 class DataStoreSettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
@@ -40,6 +37,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")
         val LOCATION_MIN_DISTANCE = intPreferencesKey("SETTINGS_LOCATION_MIN_DISTANCE")
         val MAP_ZOOM_LEVEL = intPreferencesKey("SETTINGS_MAP_ZOOM_LEVEL")
+        val ROADBOOK_PIXELS_TO_MOVE = intPreferencesKey("ROADBOOK_PIXELS_TO_MOVE")
     }
 
     override fun getSettings(): Flow<Settings> {
@@ -48,8 +46,9 @@ class DataStoreSettingsRepository @Inject constructor(
 
             Settings(
                 mapZoomLevel = it[MAP_ZOOM_LEVEL] ?: 19,
-                locationMinTime = it[LOCATION_MIN_TIME] ?: 1_000L,
-                locationMinDistance = it[LOCATION_MIN_DISTANCE] ?: 10,
+                pixelsToMoveRoadbook = it[ROADBOOK_PIXELS_TO_MOVE] ?: 317,
+                millisecondsBetweenLocations = it[LOCATION_MIN_TIME] ?: 1_000L,
+                metersBetweenLocations = it[LOCATION_MIN_DISTANCE] ?: 10,
             )
         }.distinctUntilChanged()
     }
@@ -59,8 +58,9 @@ class DataStoreSettingsRepository @Inject constructor(
 
         dataStore.edit {
             it[MAP_ZOOM_LEVEL] = settings.mapZoomLevel
-            it[LOCATION_MIN_TIME] = settings.locationMinTime
-            it[LOCATION_MIN_DISTANCE] = settings.locationMinDistance
+            it[ROADBOOK_PIXELS_TO_MOVE] = settings.pixelsToMoveRoadbook
+            it[LOCATION_MIN_TIME] = settings.millisecondsBetweenLocations
+            it[LOCATION_MIN_DISTANCE] = settings.metersBetweenLocations
         }
     }
 }

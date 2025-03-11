@@ -42,6 +42,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onAction(uiAction: UiAction) = when(uiAction) {
         is UiAction.OnMapZoomLevelChange -> saveMapZoomLevel(uiAction.mapZoomLevel)
+        is UiAction.OnPixelsToMoveRoadbookChange -> savePixelsToMoveRoadbook(uiAction.pixelsToMove)
         is UiAction.OnLocationMinTimeChange -> saveLocationMinTime(uiAction.locationMinTime)
         is UiAction.OnLocationMinDistanceChange ->
             saveLocationMinDistance(uiAction.locationMinDistance)
@@ -53,22 +54,29 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun savePixelsToMoveRoadbook(pixelsToMove: Int) {
+        viewModelScope.launch {
+            settingsRepository.saveSettings(settingsState.value.copy(pixelsToMoveRoadbook = pixelsToMove))
+        }
+    }
+
     private fun saveLocationMinTime(locationMinTime: Long) {
         viewModelScope.launch {
-            settingsRepository.saveSettings(settingsState.value.copy(locationMinTime = locationMinTime))
+            settingsRepository.saveSettings(settingsState.value.copy(millisecondsBetweenLocations = locationMinTime))
         }
     }
 
     private fun saveLocationMinDistance(locationMinDistance: Int) {
         viewModelScope.launch {
             settingsRepository.saveSettings(
-                settingsState.value.copy(locationMinDistance = locationMinDistance)
+                settingsState.value.copy(metersBetweenLocations = locationMinDistance)
             )
         }
     }
 
     sealed class UiAction {
         data class OnMapZoomLevelChange(val mapZoomLevel: Int) : UiAction()
+        data class OnPixelsToMoveRoadbookChange(val pixelsToMove: Int) : UiAction()
         data class OnLocationMinTimeChange(val locationMinTime: Long) : UiAction()
         data class OnLocationMinDistanceChange(val locationMinDistance: Int) : UiAction()
     }

@@ -37,10 +37,12 @@ import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.ui.LocationMinDistanceSetting
 import org.giste.navigator.features.settings.ui.LocationMinTimeSetting
 import org.giste.navigator.features.settings.ui.MapZoomLevelSetting
+import org.giste.navigator.features.settings.ui.PixelsToMoveRoadbookSetting
 import org.giste.navigator.features.settings.ui.SettingGroup
 import org.giste.navigator.ui.SettingsViewModel.UiAction.OnLocationMinDistanceChange
 import org.giste.navigator.ui.SettingsViewModel.UiAction.OnLocationMinTimeChange
 import org.giste.navigator.ui.SettingsViewModel.UiAction.OnMapZoomLevelChange
+import org.giste.navigator.ui.SettingsViewModel.UiAction.OnPixelsToMoveRoadbookChange
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 @Preview(
@@ -99,6 +101,10 @@ fun SettingsContent(
                     zoomLevel = settings.mapZoomLevel,
                     onValueChange = { uiAction(OnMapZoomLevelChange(it)) },
                 )
+                PixelsToMoveRoadbookSetting(
+                    pixelsToMove = settings.pixelsToMoveRoadbook,
+                    onValueChange = { uiAction(OnPixelsToMoveRoadbookChange(it)) },
+                )
                 SettingGroup(stringResource(R.string.settings_advanced_group_label))
                 Row(
                     modifier = Modifier
@@ -115,11 +121,11 @@ fun SettingsContent(
                     )
                 }
                 LocationMinTimeSetting(
-                    minTime = settings.locationMinTime,
+                    minTime = settings.millisecondsBetweenLocations,
                     onValueChange = { uiAction(OnLocationMinTimeChange(it)) },
                 )
                 LocationMinDistanceSetting(
-                    minDistance = settings.locationMinDistance,
+                    minDistance = settings.metersBetweenLocations,
                     onValueChange = { uiAction(OnLocationMinDistanceChange(it)) },
                 )
             }

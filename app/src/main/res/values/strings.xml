@@ -34,6 +34,8 @@
     <string name="settings_basic_group_label">Basic settings</string>
     <string name="settings_zoom_level_label">Default zoom level</string>
     <string name="settings_zoom_level_description">Map zoom level when application is started</string>
+    <string name="settings_pixels_to_move_label">Pixels to move the roadbook</string>
+    <string name="settings_pixels_to_move_description">The number of pixels that roadbook will move with every remote key press</string>
     <string name="settings_advanced_group_label">Advanced settings</string>
     <string name="settings_advanced_warning">Do not modify if you do not know what you are doing</string>
     <string name="settings_minimum_time_label">Location Minimum Time</string>

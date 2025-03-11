@@ -27,6 +27,7 @@ import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.settings.data.DataStoreSettingsRepository.Companion.LOCATION_MIN_DISTANCE
 import org.giste.navigator.features.settings.data.DataStoreSettingsRepository.Companion.LOCATION_MIN_TIME
 import org.giste.navigator.features.settings.data.DataStoreSettingsRepository.Companion.MAP_ZOOM_LEVEL
+import org.giste.navigator.features.settings.data.DataStoreSettingsRepository.Companion.ROADBOOK_PIXELS_TO_MOVE
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.domain.SettingsRepository
 import org.junit.jupiter.api.AfterEach
@@ -57,15 +58,16 @@ class DataStoreSettingsRepositoryTests {
 
     @Test
     fun `store settings when saved`() = runTest {
-        val expectedSettings = Settings(19,500L, 5)
+        val expectedSettings = Settings(19, 317, 500L, 5)
 
         settingsRepository.saveSettings(expectedSettings)
 
         val actualSettings = testDataStore.data.map {
             Settings(
                 mapZoomLevel = it[MAP_ZOOM_LEVEL] ?: 19,
-                locationMinTime = it[LOCATION_MIN_TIME] ?: 1_000L,
-                locationMinDistance = it[LOCATION_MIN_DISTANCE] ?: 10,
+                pixelsToMoveRoadbook = it[ROADBOOK_PIXELS_TO_MOVE] ?: 317,
+                millisecondsBetweenLocations = it[LOCATION_MIN_TIME] ?: 1_000L,
+                metersBetweenLocations = it[LOCATION_MIN_DISTANCE] ?: 10,
             )
         }.first()
         Assertions.assertEquals(expectedSettings, actualSettings)
@@ -75,8 +77,8 @@ class DataStoreSettingsRepositoryTests {
     @Test
     fun `returns new settings each time one is saved`() = runTest {
         val settings1 = Settings()
-        val settings2 = Settings(19, 100L, 1)
-        val settings3 = Settings(19, 200L, 2)
+        val settings2 = Settings(19, 317, 100L, 1)
+        val settings3 = Settings(19, 317, 200L, 2)
         val actualSettings = mutableListOf<Settings>()
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {

@@ -42,7 +42,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SettingsInstrumentedTests {
+class SettingsScreenInstrumentedTests {
     @OptIn(ExperimentalTestApi::class)
     @RegisterExtension
     @JvmField
@@ -62,8 +62,6 @@ class SettingsInstrumentedTests {
         extension.use {
             setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
-            waitUntilExactlyOneExists(hasText("1.000"))
-            waitUntilExactlyOneExists(hasText("10"))
             waitUntilExactlyOneExists(
                 hasProgressBarRangeInfo(
                     ProgressBarRangeInfo(
@@ -73,6 +71,9 @@ class SettingsInstrumentedTests {
                     )
                 )
             )
+            waitUntilExactlyOneExists(hasText("317"))
+            waitUntilExactlyOneExists(hasText("1.000"))
+            waitUntilExactlyOneExists(hasText("10"))
         }
     }
 
@@ -86,6 +87,23 @@ class SettingsInstrumentedTests {
 
             verify { viewModel.onAction(SettingsViewModel.UiAction.OnMapZoomLevelChange(17)) }
         }
+    }
+
+    @Test
+    fun saves_pixels_to_move_when_changed() {
+        extension.use {
+            setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
+
+            waitUntilExactlyOneExists(hasText("317"))
+            onNodeWithText("317").performClick()
+
+            waitUntilExactlyOneExists(hasTestTag(KEY_DELETE))
+
+            onNodeWithTag(KEY_DELETE).performClick()
+            onNodeWithTag(ACCEPT_BUTTON).performClick()
+        }
+
+        verify { viewModel.onAction(SettingsViewModel.UiAction.OnPixelsToMoveRoadbookChange(31)) }
     }
 
     @Test
