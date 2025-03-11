@@ -30,6 +30,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import javax.inject.Inject
+import androidx.core.net.toUri
+import androidx.core.graphics.createBitmap
 
 private const val TAG = "RoadbookDatasourcePdfRenderer"
 private const val ROADBOOK_FILE = "roadbook.pdf"
@@ -45,7 +47,7 @@ class PdfRendererRoadbookDatasource @Inject constructor(
 
     override suspend fun loadRoadbook(uri: String) {
         withContext(dispatcher) {
-            val roadbookUri = Uri.parse(uri)
+            val roadbookUri = uri.toUri()
             val roadbookFile =
                 File(context.filesDir, ROADBOOK_FILE)
 
@@ -101,10 +103,9 @@ class PdfRendererRoadbookDatasource @Inject constructor(
      * @return The rendered `Bitmap`.
      */
     private fun drawBitmapLogic(page: PdfRenderer.Page): Bitmap {
-        val bitmap = Bitmap.createBitmap(
+        val bitmap = createBitmap(
             page.width * TARGET_DPI / DEFAULT_DPI,
             page.height * TARGET_DPI / DEFAULT_DPI,
-            Bitmap.Config.ARGB_8888,
         )
 
         Canvas(bitmap).apply {
