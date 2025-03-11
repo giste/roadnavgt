@@ -15,6 +15,8 @@
 
 package org.giste.navigator.ui
 
+import android.icu.text.DecimalFormatSymbols
+import android.icu.text.NumberFormat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -25,11 +27,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -54,16 +58,18 @@ import org.giste.navigator.ui.theme.NavigatorTheme
 @Composable
 fun NavigatorLandscapePreview() {
     NavigatorTheme(darkTheme = true) {
-        NavigatorLandscapeScreen(
-            locationState = null,
-            mapSourceState = listOf(),
-            roadbookState = Roadbook.NotLoaded,
-            settings = Settings(),
-            trip = Trip(),
-            roadbookScrollState = LazyListState(),
-            onEvent = {},
-            navigateToSettings = {},
-        )
+        Surface {
+            NavigatorLandscapeScreen(
+                locationState = null,
+                mapSourceState = listOf(),
+                roadbookState = Roadbook.NotLoaded,
+                settings = Settings(),
+                trip = Trip(),
+                roadbookScrollState = LazyListState(),
+                onEvent = {},
+                navigateToSettings = {},
+            )
+        }
     }
 }
 
@@ -78,9 +84,21 @@ fun NavigatorLandscapeScreen(
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance(),
 ) {
     val padding = NavigatorTheme.dimensions.marginPadding
     var showPartialSettingDialog by remember { mutableStateOf(false) }
+
+    val numberFormat by rememberSaveable {
+        mutableStateOf(
+            NumberFormat.getInstance(decimalFormatSymbols.locale).apply {
+                isGroupingUsed = true
+                minimumFractionDigits = 2
+                maximumFractionDigits = 2
+                minimumIntegerDigits = 1
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -97,7 +115,7 @@ fun NavigatorLandscapeScreen(
                     .fillMaxHeight()
             ) {
                 TripTotal(
-                    distance = "%,.2f".format(trip.total.div(1000f)),
+                    distance = numberFormat.format(trip.total.div(1000f)),
                     onClick = {},
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
@@ -105,7 +123,7 @@ fun NavigatorLandscapeScreen(
                 )
                 HorizontalDivider()
                 TripPartial(
-                    distance = "%,.2f".format(trip.partial.div(1000f)),
+                    distance = numberFormat.format(trip.partial.div(1000f)),
                     onClick = { showPartialSettingDialog = true },
                     modifier = Modifier
                         .height(IntrinsicSize.Min)

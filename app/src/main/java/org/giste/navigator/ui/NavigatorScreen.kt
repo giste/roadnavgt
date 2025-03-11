@@ -111,11 +111,13 @@ fun NavigatorContent(
                         }
 
                         NativeKeyEvent.KEYCODE_DPAD_LEFT -> {
+                            Log.d("NavigationScreen", "Processing left key")
                             onEvent(NavigatorViewModel.UiAction.DecrementPartial)
                             return@onKeyEvent true
                         }
 
                         NativeKeyEvent.KEYCODE_F6 -> {
+                            Log.d("NavigationScreen", "Processing F6 key")
                             onEvent(NavigatorViewModel.UiAction.ResetPartial)
                             return@onKeyEvent true
                         }

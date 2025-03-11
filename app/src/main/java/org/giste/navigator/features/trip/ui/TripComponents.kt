@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 
+const val TRIP_TOTAL = "TRIP_TOTAL"
 const val TRIP_PARTIAL = "TRIP_PARTIAL"
 
 @Composable
@@ -35,10 +36,10 @@ fun TripTotal(
 ) {
     Text(
         text = distance,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.displayMedium,
         textAlign = TextAlign.End,
         modifier = modifier
+            .testTag(TRIP_TOTAL)
             .fillMaxSize()
             .wrapContentHeight()
             .clickable { onClick() }
@@ -53,7 +54,6 @@ fun TripPartial(
 ) {
     Text(
         text = distance,
-        color = MaterialTheme.colorScheme.onSurface,
         style = MaterialTheme.typography.displayLarge,
         textAlign = TextAlign.End,
         modifier = modifier
