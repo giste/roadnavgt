@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -83,7 +82,7 @@ fun VtmMapView(
                 // Render theme
                 setTheme(VtmThemes.DEFAULT)
 
-                // Set centar at the bottom
+                // Set center at the bottom
                 viewport().mapViewCenterY = 0.6f
 
                 // Initial position, scale and tilt
@@ -98,7 +97,7 @@ fun VtmMapView(
 
             mapView
         },
-        modifier = modifier.fillMaxSize().focusProperties { canFocus = false },
+        modifier = modifier.fillMaxSize(),
     ) { view ->
         with(view.map()) {
             location?.let { location ->
