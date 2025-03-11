@@ -47,7 +47,7 @@ class NavigatorViewModel @Inject constructor(
     private val roadbookRepository: RoadbookRepository,
     private val settingsRepository: SettingsRepository,
     private val tripRepository: TripRepository,
-    private val getTripsUseCase: GetTripsUseCase,
+    getTripsUseCase: GetTripsUseCase,
 ) : ViewModel() {
     val locationState: StateFlow<Location?> = locationRepository.getLocations()
         .stateIn(

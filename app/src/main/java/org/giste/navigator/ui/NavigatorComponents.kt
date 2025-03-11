@@ -58,9 +58,7 @@ fun CommandBar(
     val selectRoadbookLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
-        if (uri != null) {
-            onEvent(NavigatorViewModel.UiAction.SetUri(uri.toString()))
-        }
+        uri?.let { onEvent(NavigatorViewModel.UiAction.SetUri(uri.toString())) }
     }
 
     Row(
