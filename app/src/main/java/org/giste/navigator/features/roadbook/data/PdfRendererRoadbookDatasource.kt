@@ -32,6 +32,8 @@ import java.io.InputStream
 import javax.inject.Inject
 import androidx.core.net.toUri
 import androidx.core.graphics.createBitmap
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "RoadbookDatasourcePdfRenderer"
 private const val ROADBOOK_FILE = "roadbook.pdf"
@@ -44,6 +46,7 @@ class PdfRendererRoadbookDatasource @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RoadbookDatasource {
     private var renderer: PdfRenderer? = createRenderer()
+    private val mutex = Mutex()
 
     override suspend fun loadRoadbook(uri: String) {
         withContext(dispatcher) {
@@ -80,14 +83,16 @@ class PdfRendererRoadbookDatasource @Inject constructor(
         val pages = mutableListOf<RoadbookPage>()
 
         withContext(dispatcher) {
-            renderer?.let {
-                val start = startPosition.coerceAtLeast(PDF_STARTING_PAGE_INDEX)
-                val end = (startPosition + loadSize).coerceAtMost(it.pageCount)
-                for (index in start until end) {
-                    Log.d(TAG, "Processing page $index")
-                    it.openPage(index).use { page ->
-                        val bitmap = drawBitmapLogic(page)
-                        pages.add(RoadbookPage(index, bitmap))
+            mutex.withLock {
+                renderer?.let {
+                    val start = startPosition.coerceAtLeast(PDF_STARTING_PAGE_INDEX)
+                    val end = (startPosition + loadSize).coerceAtMost(it.pageCount)
+                    for (index in start until end) {
+                        Log.d(TAG, "Processing page $index")
+                        it.openPage(index).use { page ->
+                            val bitmap = drawBitmapLogic(page)
+                            pages.add(RoadbookPage(index, bitmap))
+                        }
                     }
                 }
             }
