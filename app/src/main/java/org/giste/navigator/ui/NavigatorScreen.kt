@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -81,7 +82,7 @@ fun NavigatorContent(
     val coroutineScope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
     var scrollState = rememberLazyListState()
-    val pixelsToScroll = 317
+    val pixelsToScroll = rememberSaveable { settings.pixelsToMoveRoadbook }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
