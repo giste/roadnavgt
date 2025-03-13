@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -81,20 +80,16 @@ fun NavigatorContent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
-    var scrollState = rememberLazyListState()
-    val pixelsToScroll = rememberSaveable { settings.pixelsToMoveRoadbook }
+    var scrollState = if (roadbook is Roadbook.Loaded)
+        rememberLazyListState(
+            initialFirstVisibleItemIndex = roadbook.initialScroll.pageIndex,
+            initialFirstVisibleItemScrollOffset = roadbook.initialScroll.pageOffset
+        )
+    else
+        rememberLazyListState()
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-    }
-
-    LaunchedEffect(roadbook) {
-        if (roadbook is Roadbook.Loaded) {
-            scrollState.scrollToItem(
-                index = roadbook.initialScroll.pageIndex,
-                scrollOffset = roadbook.initialScroll.pageOffset
-            )
-        }
     }
 
     Surface(
@@ -125,14 +120,14 @@ fun NavigatorContent(
 
                         NativeKeyEvent.KEYCODE_DPAD_UP -> {
                             coroutineScope.launch {
-                                scrollState.animateScrollBy(pixelsToScroll.toFloat())
+                                scrollState.animateScrollBy(settings.pixelsToMoveRoadbook.toFloat())
                             }
                             return@onKeyEvent true
                         }
 
                         NativeKeyEvent.KEYCODE_DPAD_DOWN -> {
                             coroutineScope.launch {
-                                scrollState.animateScrollBy(-pixelsToScroll.toFloat())
+                                scrollState.animateScrollBy(-settings.pixelsToMoveRoadbook.toFloat())
                             }
                             return@onKeyEvent true
                         }
