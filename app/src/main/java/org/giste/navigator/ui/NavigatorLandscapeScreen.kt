@@ -66,6 +66,7 @@ fun NavigatorLandscapePreview() {
                 settings = Settings(),
                 trip = Trip(),
                 roadbookScrollState = LazyListState(),
+                onRoadbookScrollFinish = { _, _ -> },
                 onEvent = {},
                 navigateToSettings = {},
             )
@@ -81,6 +82,7 @@ fun NavigatorLandscapeScreen(
     settings: Settings,
     trip: Trip,
     roadbookScrollState: LazyListState,
+    onRoadbookScrollFinish: (Int, Int) -> Unit,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -139,10 +141,8 @@ fun NavigatorLandscapeScreen(
             VerticalDivider()
             Roadbook(
                 roadbook = roadbookState,
-                onScroll = { page, offset ->
-                    onEvent(NavigatorViewModel.UiAction.SaveScroll(page, offset))
-                },
                 roadbookScrollState = roadbookScrollState,
+                onScrollFinish = onRoadbookScrollFinish,
                 modifier = Modifier
                     .weight(5f),
             )

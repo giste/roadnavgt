@@ -110,9 +110,6 @@ class DataStoreRoadbookRepository @Inject constructor(
     private suspend fun saveRoadbookUri(uri: String) {
         val preferences = dataStore.edit { it[ROADBOOK_URI] = uri }
 
-        Log.d(
-            TAG,
-            "Saved URI: ${preferences[ROADBOOK_URI]}"
-        )
+        Log.i(TAG, "Saved URI: ${preferences[ROADBOOK_URI]}")
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,8 +45,8 @@ import org.giste.navigator.features.roadbook.domain.RoadbookPage
 @Composable
 fun Roadbook(
     roadbook: Roadbook,
-    onScroll: (Int, Int) -> Unit,
     roadbookScrollState: LazyListState,
+    onScrollFinish: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (roadbook) {
@@ -94,8 +95,8 @@ fun Roadbook(
                     RoadbookViewer(
                         pages = pages,
                         modifier = modifier,
-                        onScrollFinish = onScroll,
                         scrollState = roadbookScrollState,
+                        onScrollFinish = onScrollFinish,
                     )
                 }
             }
@@ -107,8 +108,8 @@ fun Roadbook(
 fun RoadbookViewer(
     pages: LazyPagingItems<RoadbookPage>,
     modifier: Modifier = Modifier,
-    onScrollFinish: (Int, Int) -> Unit = { _, _ -> },
-    scrollState: LazyListState,
+    scrollState: LazyListState = rememberLazyListState(),
+    onScrollFinish: (Int, Int) -> Unit = { _, _ -> }
 ) {
     LaunchedEffect(scrollState.isScrollInProgress) {
         if (!scrollState.isScrollInProgress) {

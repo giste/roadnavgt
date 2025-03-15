@@ -46,7 +46,7 @@ class PdfRendererRoadbookDatasource @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RoadbookDatasource {
     private var renderer: PdfRenderer? = createRenderer()
-    private val mutex = Mutex()
+    private var mutex = Mutex()
 
     override suspend fun loadRoadbook(uri: String) {
         withContext(dispatcher) {
@@ -54,20 +54,22 @@ class PdfRendererRoadbookDatasource @Inject constructor(
             val roadbookFile =
                 File(context.filesDir, ROADBOOK_FILE)
 
-            renderer?.close()
-            if (roadbookFile.exists()) roadbookFile.delete()
-            roadbookFile.createNewFile()
+            mutex.withLock {
+                renderer?.close()
+                if (roadbookFile.exists()) roadbookFile.delete()
+                roadbookFile.createNewFile()
 
-            val inputStream: InputStream = context.contentResolver.openInputStream(roadbookUri)
-                ?: throw IllegalArgumentException("Invalid URI: $roadbookUri")
-            val outputStream = FileOutputStream(roadbookFile)
+                val inputStream: InputStream = context.contentResolver.openInputStream(roadbookUri)
+                    ?: throw IllegalArgumentException("Invalid URI: $roadbookUri")
+                val outputStream = FileOutputStream(roadbookFile)
 
-            inputStream.copyTo(outputStream)
-            outputStream.flush()
-            inputStream.close()
-            outputStream.close()
+                inputStream.copyTo(outputStream)
+                outputStream.flush()
+                inputStream.close()
+                outputStream.close()
 
-            renderer = createRenderer()
+                renderer = createRenderer()
+            }
 
             Log.i(TAG, "Loaded roadbook: ${roadbookFile.path}")
         }
@@ -148,7 +150,9 @@ class PdfRendererRoadbookDatasource @Inject constructor(
             if (this == Uri.EMPTY) {
                 null
             } else {
-                Log.d(TAG, "Creating renderer for $this")
+                Log.i(TAG, "Creating renderer for $this")
+
+                mutex = Mutex()
                 PdfRenderer(context.contentResolver.openFileDescriptor(this, "r")!!)
             }
         }

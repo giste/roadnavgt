@@ -23,6 +23,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.location.domain.Location
 import org.giste.navigator.features.map.domain.MapSource
@@ -47,7 +49,8 @@ fun NavigatorPreview() {
             settings = Settings(),
             trip = Trip(),
             onEvent = {},
-            navigateToSettings = {}
+            navigateToSettings = {},
+            onRoadbookScrollFinish = { _, _ -> }
         )
     }
 }
@@ -65,6 +68,9 @@ fun NavigatorScreen(
         trip = viewModel.tripState.collectAsStateWithLifecycle().value,
         onEvent = viewModel::onAction,
         navigateToSettings = navigateToSettings,
+        onRoadbookScrollFinish = { index, offset ->
+            viewModel.onAction(NavigatorViewModel.UiAction.SaveScroll(index, offset))
+        }
     )
 }
 
@@ -77,16 +83,23 @@ fun NavigatorContent(
     trip: Trip,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
+    onRoadbookScrollFinish: (Int, Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
-    var scrollState = if (roadbook is Roadbook.Loaded)
+    val scrollState = if (
+        roadbook is Roadbook.Loaded &&
+        roadbook.pages.collectAsLazyPagingItems().loadState.refresh is LoadState.NotLoading
+    ) {
+        Log.d("NavigatorContent", "Creating scroll state")
+
         rememberLazyListState(
             initialFirstVisibleItemIndex = roadbook.initialScroll.pageIndex,
             initialFirstVisibleItemScrollOffset = roadbook.initialScroll.pageOffset
         )
-    else
+    } else {
         rememberLazyListState()
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -107,7 +120,6 @@ fun NavigatorContent(
                         }
 
                         NativeKeyEvent.KEYCODE_DPAD_LEFT -> {
-                            Log.d("NavigationScreen", "Processing left key")
                             onEvent(NavigatorViewModel.UiAction.DecrementPartial)
                             return@onKeyEvent true
                         }
@@ -156,6 +168,7 @@ fun NavigatorContent(
             settings = settings,
             trip = trip,
             roadbookScrollState = scrollState,
+            onRoadbookScrollFinish = onRoadbookScrollFinish,
             onEvent = onEvent,
             navigateToSettings = navigateToSettings,
         )
