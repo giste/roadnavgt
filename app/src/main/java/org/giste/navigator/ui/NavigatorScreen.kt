@@ -91,12 +91,11 @@ fun NavigatorContent(
         roadbook is Roadbook.Loaded &&
         roadbook.pages.collectAsLazyPagingItems().loadState.refresh is LoadState.NotLoading
     ) {
-        Log.d("NavigatorContent", "Creating scroll state")
+        with (roadbook.initialScroll) {
+            Log.d("NavigatorContent", "Creating roadbook scroll ($pageIndex, $pageOffset)")
 
-        rememberLazyListState(
-            initialFirstVisibleItemIndex = roadbook.initialScroll.pageIndex,
-            initialFirstVisibleItemScrollOffset = roadbook.initialScroll.pageOffset
-        )
+            rememberLazyListState(pageIndex, pageOffset)
+        }
     } else {
         rememberLazyListState()
     }
@@ -115,11 +114,13 @@ fun NavigatorContent(
                 if (it.type == KeyEventType.KeyUp) {
                     when (it.key.nativeKeyCode) {
                         NativeKeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            Log.d("NavigationScreen", "Processing Right key")
                             onEvent(NavigatorViewModel.UiAction.IncrementPartial)
                             return@onKeyEvent true
                         }
 
                         NativeKeyEvent.KEYCODE_DPAD_LEFT -> {
+                            Log.d("NavigationScreen", "Processing Left key")
                             onEvent(NavigatorViewModel.UiAction.DecrementPartial)
                             return@onKeyEvent true
                         }
@@ -131,6 +132,7 @@ fun NavigatorContent(
                         }
 
                         NativeKeyEvent.KEYCODE_DPAD_UP -> {
+                            Log.d("NavigationScreen", "Processing Up key")
                             coroutineScope.launch {
                                 scrollState.animateScrollBy(settings.pixelsToMoveRoadbook.toFloat())
                             }
@@ -138,6 +140,7 @@ fun NavigatorContent(
                         }
 
                         NativeKeyEvent.KEYCODE_DPAD_DOWN -> {
+                            Log.d("NavigationScreen", "Processing Down key")
                             coroutineScope.launch {
                                 scrollState.animateScrollBy(-settings.pixelsToMoveRoadbook.toFloat())
                             }
