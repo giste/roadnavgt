@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.paging.LoadState
@@ -41,6 +42,13 @@ import coil3.compose.AsyncImage
 import org.giste.navigator.R
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.domain.RoadbookPage
+import org.giste.navigator.features.roadbook.ui.RoadbookTags.ROADBOOK
+import org.giste.navigator.features.roadbook.ui.RoadbookTags.ROADBOOK_PAGE_
+
+object RoadbookTags {
+    const val ROADBOOK = "ROADBOOK"
+    const val ROADBOOK_PAGE_ = "ROADBOOK_PAGE_"
+}
 
 @Composable
 fun Roadbook(
@@ -121,7 +129,7 @@ fun RoadbookViewer(
     }
 
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.testTag(ROADBOOK),
         state = scrollState,
     ) {
         items(
@@ -131,7 +139,10 @@ fun RoadbookViewer(
         ) { index ->
             val pdfPage = pages[index]
             pdfPage?.let {
-                RoadbookPage(it.page)
+                RoadbookPage(
+                    page = it.page,
+                    modifier = Modifier.testTag("$ROADBOOK_PAGE_$index")
+                )
             }
         }
     }
