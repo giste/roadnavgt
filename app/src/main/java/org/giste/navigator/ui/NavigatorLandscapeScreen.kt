@@ -18,13 +18,10 @@ package org.giste.navigator.ui
 import android.icu.text.DecimalFormatSymbols
 import android.icu.text.NumberFormat
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
@@ -57,7 +54,7 @@ import org.giste.navigator.ui.theme.NavigatorTheme
 )
 @Composable
 fun NavigatorLandscapePreview() {
-    NavigatorTheme(darkTheme = true) {
+    NavigatorTheme(darkTheme = true, dynamicColor = true) {
         Surface {
             NavigatorLandscapeScreen(
                 locationState = null,
@@ -88,7 +85,6 @@ fun NavigatorLandscapeScreen(
     modifier: Modifier = Modifier,
     decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance(),
 ) {
-    val padding = NavigatorTheme.dimensions.marginPadding
     var showPartialSettingDialog by remember { mutableStateOf(false) }
 
     val numberFormat by rememberSaveable {
@@ -116,20 +112,11 @@ fun NavigatorLandscapeScreen(
                     .weight(2f)
                     .fillMaxHeight()
             ) {
-                TripTotal(
-                    distance = numberFormat.format(trip.total.div(1000f)),
-                    onClick = {},
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .padding(horizontal = padding),
-                )
+                TripTotal(distance = numberFormat.format(trip.total.div(1000f)))
                 HorizontalDivider()
                 TripPartial(
                     distance = numberFormat.format(trip.partial.div(1000f)),
                     onClick = { showPartialSettingDialog = true },
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .padding(horizontal = padding),
                 )
                 HorizontalDivider()
                 MapViewer(

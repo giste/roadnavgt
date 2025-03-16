@@ -15,15 +15,20 @@
 
 package org.giste.navigator.features.trip.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import org.giste.navigator.ui.theme.NavigatorTheme
 
 const val TRIP_TOTAL = "TRIP_TOTAL"
 const val TRIP_PARTIAL = "TRIP_PARTIAL"
@@ -31,7 +36,6 @@ const val TRIP_PARTIAL = "TRIP_PARTIAL"
 @Composable
 fun TripTotal(
     distance: String,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Text(
@@ -40,9 +44,9 @@ fun TripTotal(
         textAlign = TextAlign.End,
         modifier = modifier
             .testTag(TRIP_TOTAL)
-            .fillMaxSize()
-            .wrapContentHeight()
-            .clickable { onClick() }
+            .height(IntrinsicSize.Min)
+            .fillMaxWidth()
+            .padding(NavigatorTheme.dimensions.marginPadding),
     )
 }
 
@@ -54,12 +58,15 @@ fun TripPartial(
 ) {
     Text(
         text = distance,
-        style = MaterialTheme.typography.displayLarge,
-        textAlign = TextAlign.End,
         modifier = modifier
             .testTag(TRIP_PARTIAL)
-            .fillMaxSize()
-            .wrapContentHeight()
+            .height(IntrinsicSize.Min)
+            .fillMaxWidth()
             .clickable { onClick() }
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
+            .padding(NavigatorTheme.dimensions.marginPadding),
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        textAlign = TextAlign.End,
+        style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Bold),
     )
 }
