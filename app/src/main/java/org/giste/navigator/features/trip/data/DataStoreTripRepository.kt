@@ -22,6 +22,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import org.giste.navigator.StateDatastore
 import org.giste.navigator.features.trip.domain.Trip
 import org.giste.navigator.features.trip.domain.TripRepository
 import javax.inject.Inject
@@ -32,7 +33,7 @@ private const val PARTIAL_MAX = 999990
 private const val TOTAL_MAX = 9999990
 
 class DataStoreTripRepository @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
+    @StateDatastore private val dataStore: DataStore<Preferences>,
 ) : TripRepository {
     override fun getTrips(): Flow<Trip> {
         return dataStore.data.map {

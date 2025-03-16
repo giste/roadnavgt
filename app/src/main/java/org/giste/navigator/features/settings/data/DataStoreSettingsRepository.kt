@@ -24,6 +24,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import org.giste.navigator.SettingsDatastore
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Inject
@@ -31,7 +32,7 @@ import javax.inject.Inject
 private const val TAG = "DataStoreSettingsRepository"
 
 class DataStoreSettingsRepository @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
+    @SettingsDatastore private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
     companion object {
         val LOCATION_MIN_TIME = longPreferencesKey("SETTINGS_LOCATION_MIN_TIME")

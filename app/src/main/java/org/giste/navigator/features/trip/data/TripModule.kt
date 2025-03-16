@@ -21,6 +21,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import org.giste.navigator.StateDatastore
 import org.giste.navigator.features.trip.domain.TripRepository
 import javax.inject.Singleton
 
@@ -29,7 +30,7 @@ import javax.inject.Singleton
 class TripModule {
     @Singleton
     @Provides
-    fun provideTripRepository(dataStore: DataStore<Preferences>): TripRepository {
+    fun provideTripRepository(@StateDatastore dataStore: DataStore<Preferences>): TripRepository {
         return DataStoreTripRepository(dataStore)
     }
 }
