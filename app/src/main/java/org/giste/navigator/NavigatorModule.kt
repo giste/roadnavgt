@@ -52,6 +52,14 @@ annotation class IoDispatcher
 @Qualifier
 annotation class MainDispatcher
 
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class SettingsDatastore
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class StateDatastore
+
 @Module
 @InstallIn(SingletonComponent::class)
 class DispatcherModule {
@@ -86,6 +94,7 @@ private const val TAG = "NavigatorModule"
 class NavigatorModule {
     @Singleton
     @Provides
+    @StateDatastore
     fun provideStateDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         Log.d(TAG, "Creating DataStore")
 
@@ -97,6 +106,23 @@ class NavigatorModule {
                 }
             ),
             produceFile = { context.preferencesDataStoreFile("state") }
+        )
+    }
+
+    @Singleton
+    @Provides
+    @SettingsDatastore
+    fun provideSettingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        Log.d(TAG, "Creating settings datastore")
+
+        return PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = {
+                    Log.d(TAG, "Producing new settings datastore data")
+                    emptyPreferences()
+                }
+            ),
+            produceFile = { context.preferencesDataStoreFile("settings") }
         )
     }
 

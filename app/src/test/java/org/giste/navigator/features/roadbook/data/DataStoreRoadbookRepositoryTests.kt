@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.domain.RoadbookRepository
@@ -122,6 +123,7 @@ class DataStoreRoadbookRepositoryTests {
         }
         repository.loadRoadbook("Uri 1")
         repository.loadRoadbook("uri 2")
+        advanceUntilIdle()
 
         // Initial state is always NotLoaded
         assertEquals(3, roadbooks.count())

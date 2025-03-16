@@ -23,6 +23,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.giste.navigator.StateDatastore
 import org.giste.navigator.features.roadbook.domain.RoadbookRepository
 import javax.inject.Singleton
 
@@ -38,7 +39,7 @@ class RoadbookModule {
     @Singleton
     @Provides
     fun provideRoadbookRepository(
-        dataStore: DataStore<Preferences>,
+        @StateDatastore dataStore: DataStore<Preferences>,
         roadbookDatasource: RoadbookDatasource,
     ): RoadbookRepository = DataStoreRoadbookRepository(dataStore, roadbookDatasource)
 }

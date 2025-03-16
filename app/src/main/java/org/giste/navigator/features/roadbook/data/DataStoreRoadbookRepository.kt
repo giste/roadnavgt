@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import org.giste.navigator.StateDatastore
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.domain.RoadbookRepository
 import org.giste.navigator.features.roadbook.domain.Scroll
@@ -35,7 +36,7 @@ import javax.inject.Inject
 private const val TAG = "DataStoreRoadbookRepository"
 
 class DataStoreRoadbookRepository @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
+    @StateDatastore private val dataStore: DataStore<Preferences>,
     private val roadbookDatasource: RoadbookDatasource,
 ) : RoadbookRepository {
     companion object {
@@ -49,8 +50,10 @@ class DataStoreRoadbookRepository @Inject constructor(
             .distinctUntilChanged()
             .map { uri ->
                 if (uri.isEmpty()) {
+                    Log.d(TAG, "Emitting roadbook: NotLoaded")
                     Roadbook.NotLoaded
                 } else {
+                    Log.d(TAG, "Emitting roadbook: Loaded($uri)")
                     Roadbook.Loaded(
                         pages = Pager(
                             config = PagingConfig(pageSize = 5),

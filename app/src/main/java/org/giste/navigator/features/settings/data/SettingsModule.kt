@@ -21,6 +21,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import org.giste.navigator.SettingsDatastore
 import org.giste.navigator.features.settings.domain.SettingsRepository
 import javax.inject.Singleton
 
@@ -29,7 +30,7 @@ import javax.inject.Singleton
 class SettingsModule {
     @Singleton
     @Provides
-    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository {
+    fun provideSettingsRepository(@SettingsDatastore dataStore: DataStore<Preferences>): SettingsRepository {
         return DataStoreSettingsRepository(dataStore)
     }
 }
