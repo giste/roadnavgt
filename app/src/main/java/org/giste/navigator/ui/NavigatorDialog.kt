@@ -38,14 +38,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import org.giste.navigator.ui.NavigatorDialogTags.ACCEPT_BUTTON
-import org.giste.navigator.ui.NavigatorDialogTags.CANCEL_BUTTON
-import org.giste.navigator.ui.NavigatorDialogTags.TITLE
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_ACCEPT
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_CANCEL
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_MESSAGE
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_TITLE
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 @Preview(
@@ -60,8 +61,6 @@ fun NavigatorDialogPreview() {
             title = "Title",
             onCancel = { },
             onAccept = { },
-            width = 600.dp,
-            height = 400.dp,
         ) { }
     }
 }
@@ -71,10 +70,9 @@ fun NavigatorDialog(
     title: String,
     onCancel: () -> Unit,
     onAccept: () -> Unit,
-    width: Dp,
-    height: Dp,
-    innerPadding: Dp = 4.dp,
-    iconButtonSize: Dp = 64.dp,
+    width: Dp = NavigatorTheme.dimensions.dialogWidth,
+    innerPadding: Dp = NavigatorTheme.dimensions.marginPadding,
+    iconButtonSize: Dp = NavigatorTheme.dimensions.dialogButtonIconSize,
     dismissOnBackPress: Boolean = false,
     dismissOnClickOutside: Boolean = false,
     content: @Composable () -> Unit,
@@ -100,11 +98,10 @@ fun NavigatorDialog(
 
                 Box(
                     modifier = Modifier
-                    .weight(1f)
+                        .weight(1f)
                 ) {
                     content()
                 }
-
 
                 DialogButtons(
                     onAccept = onAccept,
@@ -121,17 +118,38 @@ fun NavigatorDialog(
 fun DialogTitle(
     title: String,
     modifier: Modifier = Modifier,
-    innerPadding: Dp = 4.dp,
+    innerPadding: Dp = NavigatorTheme.dimensions.marginPadding,
 ) {
     Text(
         text = title,
         modifier = modifier
-            .testTag(TITLE)
+            .testTag(DIALOG_TITLE)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primary)
             .padding(innerPadding),
         color = MaterialTheme.colorScheme.onPrimary,
-        style = MaterialTheme.typography.titleLarge,
+        style = MaterialTheme.typography.headlineLarge,
+    )
+}
+
+@Composable
+fun DialogMessage(
+    message: String,
+) {
+    Text(
+        text = message,
+        modifier = Modifier
+            .testTag(DIALOG_MESSAGE)
+            .fillMaxWidth()
+            .padding(
+                top = NavigatorTheme.dimensions.marginPadding * 10,
+                bottom = NavigatorTheme.dimensions.marginPadding * 10,
+                start = NavigatorTheme.dimensions.marginPadding * 4,
+                end = NavigatorTheme.dimensions.marginPadding * 4,
+            ),
+        overflow = TextOverflow.Clip,
+        softWrap = true,
+        style = NavigatorTheme.typography.headlineMedium,
     )
 }
 
@@ -139,8 +157,8 @@ fun DialogTitle(
 fun DialogButtons(
     onAccept: () -> Unit,
     onCancel: () -> Unit,
-    innerPadding: Dp = 4.dp,
-    iconButtonSize: Dp = 64.dp,
+    innerPadding: Dp = NavigatorTheme.dimensions.marginPadding,
+    iconButtonSize: Dp = NavigatorTheme.dimensions.dialogButtonIconSize,
     modifier: Modifier = Modifier,
 ) {
     HorizontalDivider()
@@ -150,7 +168,7 @@ fun DialogButtons(
     ) {
         Column(
             modifier = Modifier
-                .testTag(CANCEL_BUTTON)
+                .testTag(DIALOG_CANCEL)
                 .clickable { onCancel() }
                 .weight(1f)
                 .padding(innerPadding),
@@ -164,7 +182,7 @@ fun DialogButtons(
         }
         Column(
             modifier = Modifier
-                .testTag(ACCEPT_BUTTON)
+                .testTag(DIALOG_ACCEPT)
                 .background(MaterialTheme.colorScheme.primary)
                 .clickable { onAccept() }
                 .weight(1f)
@@ -182,7 +200,8 @@ fun DialogButtons(
 }
 
 object NavigatorDialogTags {
-    const val TITLE = "TITLE"
-    const val ACCEPT_BUTTON = "ACCEPT_BUTTON"
-    const val CANCEL_BUTTON = "CANCEL_BUTTON"
+    const val DIALOG_TITLE = "DIALOG_TITLE"
+    const val DIALOG_ACCEPT = "DIALOG_ACCEPT"
+    const val DIALOG_CANCEL = "DIALOG_CANCEL"
+    const val DIALOG_MESSAGE = "DIALOG_MESSAGE"
 }

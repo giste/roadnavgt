@@ -24,9 +24,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import de.mannodermaus.junit5.compose.createComposeExtension
-import org.giste.navigator.ui.NavigatorDialogTags.ACCEPT_BUTTON
-import org.giste.navigator.ui.NavigatorDialogTags.TITLE
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_DELETE
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_ACCEPT
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_MESSAGE
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_TITLE
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_DELETE
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_FIELD
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -38,7 +40,7 @@ import java.util.Locale
 import java.util.stream.Stream
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SetNumberDialogInstrumentedTests {
+class NumberDialogInstrumentedTests {
     @OptIn(ExperimentalTestApi::class)
     @RegisterExtension
     @JvmField
@@ -49,9 +51,9 @@ class SetNumberDialogInstrumentedTests {
         extension.use {
             setContent { SetTestNumberDialog() }
 
-            onNodeWithTag(TITLE).assertTextEquals("Title")
-            onNodeWithTag(SetNumberDialogTags.DESCRIPTION).assertTextEquals("Description")
-            onNodeWithTag(SetNumberDialogTags.NUMBER_FIELD).assertTextEquals("0.00")
+            onNodeWithTag(DIALOG_TITLE).assertTextEquals("Title")
+            onNodeWithTag(DIALOG_MESSAGE).assertTextEquals("Description")
+            onNodeWithTag(NUMBER_DIALOG_FIELD).assertTextEquals("0.00")
         }
     }
 
@@ -62,7 +64,7 @@ class SetNumberDialogInstrumentedTests {
             setContent { SetTestNumberDialog() }
 
             onNodeWithText(key).performClick()
-            onNodeWithTag(SetNumberDialogTags.NUMBER_FIELD).assertTextEquals("0.0$key")
+            onNodeWithTag(NUMBER_DIALOG_FIELD).assertTextEquals("0.0$key")
         }
     }
 
@@ -71,8 +73,8 @@ class SetNumberDialogInstrumentedTests {
         extension.use {
             setContent { SetTestNumberDialog(number = 1) }
 
-            onNodeWithTag(KEY_DELETE).performClick()
-            onNodeWithTag(SetNumberDialogTags.NUMBER_FIELD).assertTextEquals("0.00")
+            onNodeWithTag(NUMBER_DIALOG_KEY_DELETE).performClick()
+            onNodeWithTag(NUMBER_DIALOG_FIELD).assertTextEquals("0.00")
         }
     }
 
@@ -85,7 +87,7 @@ class SetNumberDialogInstrumentedTests {
             testNumber.keys.listIterator().forEach {
                 onNodeWithText(it).performClick()
             }
-            onNodeWithTag(SetNumberDialogTags.NUMBER_FIELD)
+            onNodeWithTag(NUMBER_DIALOG_FIELD)
                 .assertTextEquals(testNumber.expectedFormat)
         }
     }
@@ -121,7 +123,7 @@ class SetNumberDialogInstrumentedTests {
             for (i in 1..6) {
                 onNodeWithText(i.toString()).performClick()
             }
-            onNodeWithTag(ACCEPT_BUTTON).performClick()
+            onNodeWithTag(DIALOG_ACCEPT).performClick()
         }
 
         assertEquals(123456, actualValue)
@@ -137,7 +139,7 @@ class SetNumberDialogInstrumentedTests {
         onAccept: (Int) -> Unit = { },
         decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols(Locale("en")),
     ) {
-        SetNumberDialog(
+        NumberDialog(
             title = title,
             description = description,
             number = number,

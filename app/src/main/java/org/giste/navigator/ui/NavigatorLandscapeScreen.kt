@@ -141,7 +141,7 @@ fun NavigatorLandscapeScreen(
     }
 
     if (showPartialSettingDialog) {
-        SetNumberDialog(
+        NumberDialog(
             title = stringResource(R.string.set_partial_title),
             description = stringResource(R.string.set_partial_description),
             number = trip.partial.div(10),

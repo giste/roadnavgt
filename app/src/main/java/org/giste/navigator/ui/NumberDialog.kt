@@ -47,59 +47,53 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import org.giste.navigator.R
-import org.giste.navigator.ui.SetNumberDialogTags.DESCRIPTION
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_0
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_1
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_2
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_3
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_4
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_5
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_6
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_7
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_8
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_9
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_DELETE
-import org.giste.navigator.ui.SetNumberDialogTags.NUMBER_FIELD
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_0
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_1
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_2
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_3
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_4
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_5
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_6
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_7
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_8
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_9
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_DELETE
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_FIELD
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 private const val DELETE = '<'
 
-object SetNumberDialogTags {
-    const val DESCRIPTION = "DESCRIPTION"
-    const val NUMBER_FIELD = "NUMBER_FIELD"
-    const val KEY_0 = "KEY_0"
-    const val KEY_1 = "KEY_1"
-    const val KEY_2 = "KEY_2"
-    const val KEY_3 = "KEY_3"
-    const val KEY_4 = "KEY_4"
-    const val KEY_5 = "KEY_5"
-    const val KEY_6 = "KEY_6"
-    const val KEY_7 = "KEY_7"
-    const val KEY_8 = "KEY_8"
-    const val KEY_9 = "KEY_9"
-    const val KEY_DELETE = "KEY_DELETE"
+object NumberDialogTags {
+    const val NUMBER_DIALOG_FIELD = "NUMBER_DIALOG_FIELD"
+    const val NUMBER_DIALOG_KEY_0 = "NUMBER_DIALOG_KEY_0"
+    const val NUMBER_DIALOG_KEY_1 = "NUMBER_DIALOG_KEY_1"
+    const val NUMBER_DIALOG_KEY_2 = "NUMBER_DIALOG_KEY_2"
+    const val NUMBER_DIALOG_KEY_3 = "NUMBER_DIALOG_KEY_3"
+    const val NUMBER_DIALOG_KEY_4 = "NUMBER_DIALOG_KEY_4"
+    const val NUMBER_DIALOG_KEY_5 = "NUMBER_DIALOG_KEY_5"
+    const val NUMBER_DIALOG_KEY_6 = "NUMBER_DIALOG_KEY_6"
+    const val NUMBER_DIALOG_KEY_7 = "NUMBER_DIALOG_KEY_7"
+    const val NUMBER_DIALOG_KEY_8 = "NUMBER_DIALOG_KEY_8"
+    const val NUMBER_DIALOG_KEY_9 = "NUMBER_DIALOG_KEY_9"
+    const val NUMBER_DIALOG_KEY_DELETE = "NUMBER_DIALOG_KEY_DELETE"
 }
 
 @Preview(
     name = "Tab Active 3 Landscape",
     showBackground = true,
-    //device = "spec:width=1920px,height=1200px,dpi=360, isRound=false, orientation=landscape",
     device = "spec:width=853dp,height=485dp, isRound=false, orientation=landscape",
 )
 @Preview(
     name = "Tab Active 3 Portrait",
     showBackground = true,
-    //device = "spec:width=1920px,height=1200px,dpi=360, isRound=false, orientation=portrait",
     device = "spec:width=485dp,height=853dp, isRound=false, orientation=portrait",
 )
 @Composable
-private fun SetNumberDialogPreview() {
+private fun NumberDialogPreview() {
     NavigatorTheme(dynamicColor = true, darkTheme = true) {
-        SetNumberDialog(
+        NumberDialog(
             title = "Title",
             description = "Description of the requested number",
             number = 1234,
@@ -112,7 +106,7 @@ private fun SetNumberDialogPreview() {
 }
 
 @Composable
-fun SetNumberDialog(
+fun NumberDialog(
     title: String,
     description: String,
     number: Int,
@@ -136,17 +130,13 @@ fun SetNumberDialog(
     }
     val decimalFactor by rememberSaveable {
         var scale = 1
-        for (i in 1..numberOfDecimalDigits) {
-            scale *= 10
-        }
+        (1..numberOfDecimalDigits).forEach { scale *= 10 }
 
         mutableIntStateOf(scale)
     }
     val maxNumber by rememberSaveable {
         var max = 1
-        for (i in 1..numberOfIntegerDigits) {
-            max *= 10
-        }
+        (1..numberOfIntegerDigits).forEach { max *= 10 }
 
         mutableIntStateOf(max.minus(1))
     }
@@ -172,7 +162,6 @@ fun SetNumberDialog(
         onCancel = onCancel,
         onAccept = { onAccept(currentNumber) },
         width = NavigatorTheme.dimensions.dialogWidth,
-        height = 400.dp,
         innerPadding = NavigatorTheme.dimensions.marginPadding,
         iconButtonSize = NavigatorTheme.dimensions.dialogButtonIconSize,
     ) {
@@ -184,17 +173,7 @@ fun SetNumberDialog(
                 modifier = Modifier
                     .weight(2f),
             ) {
-                Text(
-                    text = description,
-                    modifier = Modifier
-                        .testTag(DESCRIPTION)
-                        .fillMaxWidth()
-                        .testTag("")
-                        .padding(NavigatorTheme.dimensions.marginPadding),
-                    overflow = TextOverflow.Clip,
-                    softWrap = true,
-                    style = NavigatorTheme.typography.bodyLarge,
-                )
+                DialogMessage(description)
                 NumberField(
                     number = numberFormat.format(currentNumber.div(decimalFactor.toFloat())),
                     modifier = Modifier
@@ -229,7 +208,7 @@ private fun NumberField(
             value = number,
             onValueChange = { },
             modifier = Modifier
-                .testTag(NUMBER_FIELD)
+                .testTag(NUMBER_DIALOG_FIELD)
                 .fillMaxWidth(),
             readOnly = true,
             singleLine = true,
@@ -249,27 +228,27 @@ fun NumberPad(
             .padding(NavigatorTheme.dimensions.marginPadding),
     ) {
         NumberPadRow {
-            PadKey(key = digits[7], onClick = onClick, modifier = Modifier.testTag(KEY_7))
+            PadKey(key = digits[7], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_7))
             VerticalDivider()
-            PadKey(key = digits[8], onClick = onClick, modifier = Modifier.testTag(KEY_8))
+            PadKey(key = digits[8], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_8))
             VerticalDivider()
-            PadKey(key = digits[9], onClick = onClick, modifier = Modifier.testTag(KEY_9))
+            PadKey(key = digits[9], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_9))
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(key = digits[4], onClick = onClick, modifier = Modifier.testTag(KEY_4))
+            PadKey(key = digits[4], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_4))
             VerticalDivider()
-            PadKey(key = digits[5], onClick = onClick, modifier = Modifier.testTag(KEY_5))
+            PadKey(key = digits[5], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_5))
             VerticalDivider()
-            PadKey(key = digits[6], onClick = onClick, modifier = Modifier.testTag(KEY_6))
+            PadKey(key = digits[6], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_6))
         }
         HorizontalDivider()
         NumberPadRow {
-            PadKey(key = digits[1], onClick = onClick, modifier = Modifier.testTag(KEY_1))
+            PadKey(key = digits[1], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_1))
             VerticalDivider()
-            PadKey(key = digits[2], onClick = onClick, modifier = Modifier.testTag(KEY_2))
+            PadKey(key = digits[2], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_2))
             VerticalDivider()
-            PadKey(key = digits[3], onClick = onClick, modifier = Modifier.testTag(KEY_3))
+            PadKey(key = digits[3], onClick = onClick, modifier = Modifier.testTag(NUMBER_DIALOG_KEY_3))
         }
         HorizontalDivider()
         NumberPadRow {
@@ -278,14 +257,14 @@ fun NumberPad(
                 onClick = onClick,
                 modifier = Modifier
                     .weight(2f)
-                    .testTag(KEY_0)
+                    .testTag(NUMBER_DIALOG_KEY_0)
             )
             VerticalDivider()
             PadKey(
                 icon = R.drawable.backspace,
                 onClick = { onClick(DELETE) },
                 modifier = Modifier
-                    .testTag(KEY_DELETE),
+                    .testTag(NUMBER_DIALOG_KEY_DELETE),
             )
         }
     }

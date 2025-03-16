@@ -34,8 +34,8 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.giste.navigator.features.settings.domain.Settings
-import org.giste.navigator.ui.NavigatorDialogTags.ACCEPT_BUTTON
-import org.giste.navigator.ui.SetNumberDialogTags.KEY_DELETE
+import org.giste.navigator.ui.NavigatorDialogTags.DIALOG_ACCEPT
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_DELETE
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -97,10 +97,10 @@ class SettingsScreenInstrumentedTests {
             waitUntilExactlyOneExists(hasText("317"))
             onNodeWithText("317").performClick()
 
-            waitUntilExactlyOneExists(hasTestTag(KEY_DELETE))
+            waitUntilExactlyOneExists(hasTestTag(NUMBER_DIALOG_KEY_DELETE))
 
-            onNodeWithTag(KEY_DELETE).performClick()
-            onNodeWithTag(ACCEPT_BUTTON).performClick()
+            onNodeWithTag(NUMBER_DIALOG_KEY_DELETE).performClick()
+            onNodeWithTag(DIALOG_ACCEPT).performClick()
         }
 
         verify { viewModel.onAction(SettingsViewModel.UiAction.OnPixelsToMoveRoadbookChange(31)) }
@@ -114,10 +114,10 @@ class SettingsScreenInstrumentedTests {
             waitUntilExactlyOneExists(hasText("10"))
             onNodeWithText("10").performClick()
 
-            waitUntilExactlyOneExists(hasTestTag(KEY_DELETE))
+            waitUntilExactlyOneExists(hasTestTag(NUMBER_DIALOG_KEY_DELETE))
 
-            onNodeWithTag(KEY_DELETE).performClick()
-            onNodeWithTag(ACCEPT_BUTTON).performClick()
+            onNodeWithTag(NUMBER_DIALOG_KEY_DELETE).performClick()
+            onNodeWithTag(DIALOG_ACCEPT).performClick()
         }
 
         verify { viewModel.onAction(SettingsViewModel.UiAction.OnLocationMinDistanceChange(1)) }
@@ -131,10 +131,10 @@ class SettingsScreenInstrumentedTests {
             waitUntilExactlyOneExists(hasText("1.000"))
             onNodeWithText("1.000").performClick()
 
-            waitUntilExactlyOneExists(hasTestTag(KEY_DELETE))
+            waitUntilExactlyOneExists(hasTestTag(NUMBER_DIALOG_KEY_DELETE))
 
-            onNodeWithTag(KEY_DELETE).performClick()
-            onNodeWithTag(ACCEPT_BUTTON).performClick()
+            onNodeWithTag(NUMBER_DIALOG_KEY_DELETE).performClick()
+            onNodeWithTag(DIALOG_ACCEPT).performClick()
         }
 
         verify { viewModel.onAction(SettingsViewModel.UiAction.OnLocationMinTimeChange(100)) }

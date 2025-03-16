@@ -44,7 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import org.giste.navigator.R
-import org.giste.navigator.ui.SetNumberDialog
+import org.giste.navigator.ui.NumberDialog
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 @Composable
@@ -169,7 +169,7 @@ fun NumberSetting(
     }
 
     if (showNumberDialog) {
-        SetNumberDialog(
+        NumberDialog(
             title = stringResource(R.string.settings_minimum_distance_label),
             description = stringResource(R.string.settings_minimum_distance_description),
             number = number,
