@@ -17,11 +17,9 @@ package org.giste.navigator.ui
 
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.pressKey
 import androidx.core.graphics.createBitmap
 import androidx.paging.Pager
@@ -30,6 +28,7 @@ import de.mannodermaus.junit5.compose.createComposeExtension
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -83,10 +82,7 @@ class NavigatorScreenRoadbookInstrumentedTests {
     @Test
     fun roadbook_is_loaded() {
         val roadbookDatasource = FakeRoadbookDatasource(10, 100)
-        val pager = Pager(
-            config = PagingConfig(pageSize = 5),
-            initialKey = 0,
-        ) {
+        val pager = Pager(config = PagingConfig(pageSize = 5), initialKey = 0) {
             RoadbookPagingSource(roadbookDatasource)
         }.flow
 
@@ -103,74 +99,56 @@ class NavigatorScreenRoadbookInstrumentedTests {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun up_key_moves_roadbook() {
-        val roadbookDatasource = FakeRoadbookDatasource(10, 1000)
-        val pager = Pager(
-            config = PagingConfig(pageSize = 5),
-            initialKey = 0,
-        ) {
+        val roadbookDatasource = FakeRoadbookDatasource(5, 1000)
+        val pager = Pager(config = PagingConfig(pageSize = 5), initialKey = 0) {
             RoadbookPagingSource(roadbookDatasource)
         }.flow
+        every { viewModel.onAction(any()) } returns Unit
 
         extension.use {
             setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
 
             roadbookFlow.update { Roadbook.Loaded(pager, Scroll()) }
-            settingsFlow.update { Settings().copy(pixelsToMoveRoadbook = 1000) }
+            settingsFlow.update { Settings(pixelsToMoveRoadbook = 100) }
             waitForIdle()
             onNodeWithTag(ROADBOOK).performKeyInput {
                 pressKey(Key.DirectionUp)
             }
             waitForIdle()
-            onNodeWithTag(ROADBOOK).performKeyInput {
-                pressKey(Key.DirectionUp)
-            }
-            waitForIdle()
-
-            onNodeWithTag("${ROADBOOK_PAGE_}2").assertIsDisplayed()
         }
+
+        verify { viewModel.onAction(NavigatorViewModel.UiAction.SaveScroll(0, 100)) }
     }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun down_key_moves_roadbook() {
-        val roadbookDatasource = FakeRoadbookDatasource(10, 1000)
-        val pager = Pager(
-            config = PagingConfig(pageSize = 5),
-            initialKey = 0,
-        ) {
+        val roadbookDatasource = FakeRoadbookDatasource(5, 1000)
+        val pager = Pager(config = PagingConfig(pageSize = 5), initialKey = 0) {
             RoadbookPagingSource(roadbookDatasource)
         }.flow
+        every { viewModel.onAction(any()) } returns Unit
 
         extension.use {
             setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
 
-            roadbookFlow.update { Roadbook.Loaded(pager, Scroll()) }
-            settingsFlow.update { Settings().copy(pixelsToMoveRoadbook = 1000) }
-            waitForIdle()
-            onNodeWithTag(ROADBOOK).performScrollToIndex(9)
-            waitForIdle()
-            onNodeWithTag("${ROADBOOK_PAGE_}9").assertIsDisplayed()
-
-            onNodeWithTag(ROADBOOK).performKeyInput {
-                pressKey(Key.DirectionDown)
-            }
+            roadbookFlow.update { Roadbook.Loaded(pager, Scroll(0, 200)) }
+            settingsFlow.update { Settings(pixelsToMoveRoadbook = 100) }
             waitForIdle()
             onNodeWithTag(ROADBOOK).performKeyInput {
                 pressKey(Key.DirectionDown)
             }
             waitForIdle()
-
-            onNodeWithTag("${ROADBOOK_PAGE_}7").assertIsDisplayed()
         }
+
+        verify { viewModel.onAction(NavigatorViewModel.UiAction.SaveScroll(0, 100)) }
     }
 
     class FakeRoadbookDatasource(
         private val numberOfPages: Int,
         private val pageSize: Int,
     ) : RoadbookDatasource {
-        override suspend fun loadRoadbook(uri: String) {
-            // Nothing to do
-        }
+        override suspend fun loadRoadbook(uri: String) {}
 
         override fun getPageCount(): Int = numberOfPages
 
