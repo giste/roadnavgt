@@ -40,7 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Preview
 import org.giste.navigator.R
 import org.giste.navigator.ui.theme.NavigatorTheme
 
@@ -48,6 +49,17 @@ const val INCREASE_PARTIAL = "INCREASE_PARTIAL"
 const val DECREASE_PARTIAL = "DECREASE_PARTIAL"
 const val RESET_PARTIAL = "RESET_PARTIAL"
 const val RESET_TRIP = "RESET_TRIP"
+
+@Preview
+@Composable
+fun CommandBarPreview() {
+    NavigatorTheme(darkTheme = true, dynamicColor = true) {
+        CommandBar(
+            onEvent = {},
+            navigateToSettings = {},
+        )
+    }
+}
 
 @Composable
 fun CommandBar(
@@ -71,7 +83,6 @@ fun CommandBar(
         CommandBarButton(
             onClick = { onEvent(NavigatorViewModel.UiAction.DecrementPartial) },
             icon = Icons.Default.KeyboardArrowDown,
-            contentDescription = stringResource(R.string.partial_decrement_description),
             modifier = Modifier
                 .weight(1f)
                 .testTag(DECREASE_PARTIAL)
@@ -79,7 +90,6 @@ fun CommandBar(
         CommandBarButton(
             onClick = { onEvent(NavigatorViewModel.UiAction.ResetPartial) },
             icon = Icons.Default.Refresh,
-            contentDescription = stringResource(R.string.partial_reset_description),
             modifier = Modifier
                 .weight(1f)
                 .testTag(RESET_PARTIAL)
@@ -87,7 +97,6 @@ fun CommandBar(
         CommandBarButton(
             onClick = { onEvent(NavigatorViewModel.UiAction.IncrementPartial) },
             icon = Icons.Default.KeyboardArrowUp,
-            contentDescription = stringResource(R.string.partial_increment_description),
             modifier = Modifier
                 .weight(1f)
                 .testTag(INCREASE_PARTIAL)
@@ -95,7 +104,6 @@ fun CommandBar(
         CommandBarButton(
             onClick = { onEvent(NavigatorViewModel.UiAction.ResetTrip) },
             icon = Icons.Default.Clear,
-            contentDescription = stringResource(R.string.trip_reset_description),
             modifier = Modifier
                 .weight(1f)
                 .testTag(RESET_TRIP)
@@ -103,13 +111,16 @@ fun CommandBar(
         CommandBarButton(
             onClick = { selectRoadbookLauncher.launch("application/pdf") },
             icon = Icons.Default.Search,
-            contentDescription = stringResource(R.string.load_roadbook_description),
+            modifier = Modifier.weight(1f)
+        )
+        CommandBarButton(
+            onClick = {},
+            icon = ImageVector.vectorResource(R.drawable.map),
             modifier = Modifier.weight(1f)
         )
         CommandBarButton(
             onClick = { navigateToSettings() },
             icon = Icons.Default.Settings,
-            contentDescription = stringResource(R.string.settings_description),
             modifier = Modifier.weight(1f)
         )
     }
@@ -119,7 +130,6 @@ fun CommandBar(
 fun CommandBarButton(
     onClick: () -> Unit,
     icon: ImageVector,
-    contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -129,7 +139,7 @@ fun CommandBarButton(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = contentDescription,
+            contentDescription = null,
             modifier = Modifier
                 .size(NavigatorTheme.dimensions.commandBarIconSize),
             tint = MaterialTheme.colorScheme.onSurface

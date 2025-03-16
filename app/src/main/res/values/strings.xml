@@ -1,4 +1,5 @@
 <resources>
+    <!-- Application name -->
     <string name="app_name">Roadbook Navigator GT</string>
 
     <!-- Permissions -->
@@ -13,14 +14,6 @@
     <string name="roadbook_load_message">Load a roadbook</string>
     <string name="roadbook_error_message">Unexpected error</string>
     <string name="roadbook_loading_message">Loading…</string>
-
-    <!-- Button bar -->
-    <string name="partial_decrement_description">Decrement partial</string>
-    <string name="partial_reset_description">Reset partial</string>
-    <string name="partial_increment_description">Increment partial</string>
-    <string name="trip_reset_description">Reset trip</string>
-    <string name="load_roadbook_description">Load roadbook</string>
-    <string name="settings_description">Settings</string>
 
     <!-- Settings -->
     <string name="settings_dialog_title">Settings</string>
