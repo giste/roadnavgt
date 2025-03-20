@@ -15,6 +15,8 @@
 
 package org.giste.navigator.ui
 
+import android.icu.text.DecimalFormatSymbols
+import android.icu.text.NumberFormat
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -50,6 +52,14 @@ class SettingsScreenInstrumentedTests {
 
     private val viewModel = mockk<SettingsViewModel>()
 
+    private val decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()
+    private val formatter = NumberFormat.getInstance(decimalFormatSymbols.locale)
+        .apply {
+            isGroupingUsed = true
+            minimumFractionDigits = 0
+            maximumFractionDigits = 0
+        }
+
     @BeforeEach
     fun beforeEach() {
         clearAllMocks()
@@ -71,9 +81,9 @@ class SettingsScreenInstrumentedTests {
                     )
                 )
             )
-            waitUntilExactlyOneExists(hasText("317"))
-            waitUntilExactlyOneExists(hasText("1.000"))
-            waitUntilExactlyOneExists(hasText("10"))
+            waitUntilExactlyOneExists(hasText(formatter.format(317)))
+            waitUntilExactlyOneExists(hasText(formatter.format(1_000)))
+            waitUntilExactlyOneExists(hasText(formatter.format(10)))
         }
     }
 
@@ -111,8 +121,10 @@ class SettingsScreenInstrumentedTests {
         extension.use {
             setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
-            waitUntilExactlyOneExists(hasText("10"))
-            onNodeWithText("10").performClick()
+            val formatedDistance = formatter.format(10)
+
+            waitUntilExactlyOneExists(hasText(formatedDistance))
+            onNodeWithText(formatedDistance).performClick()
 
             waitUntilExactlyOneExists(hasTestTag(NUMBER_DIALOG_KEY_DELETE))
 
@@ -128,8 +140,10 @@ class SettingsScreenInstrumentedTests {
         extension.use {
             setContent { SettingsScreen(settingsViewModel =  viewModel, navigateBack = {}) }
 
-            waitUntilExactlyOneExists(hasText("1.000"))
-            onNodeWithText("1.000").performClick()
+            val formattedTime = formatter.format(1_000)
+
+            waitUntilExactlyOneExists(hasText(formattedTime))
+            onNodeWithText(formattedTime).performClick()
 
             waitUntilExactlyOneExists(hasTestTag(NUMBER_DIALOG_KEY_DELETE))
 
