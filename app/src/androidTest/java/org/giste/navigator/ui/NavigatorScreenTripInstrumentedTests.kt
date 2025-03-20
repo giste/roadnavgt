@@ -15,6 +15,8 @@
 
 package org.giste.navigator.ui
 
+import android.icu.text.DecimalFormatSymbols
+import android.icu.text.NumberFormat
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTextEquals
@@ -57,6 +59,14 @@ class NavigatorScreenTripInstrumentedTests {
     private val settingsFlow = MutableStateFlow(Settings())
     private val tripFlow = MutableStateFlow(Trip())
 
+    private val decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()
+    private val formatter = NumberFormat.getInstance(decimalFormatSymbols.locale)
+        .apply {
+            isGroupingUsed = true
+            minimumFractionDigits = 2
+            maximumFractionDigits = 2
+        }
+
     @BeforeEach
     fun beforeEach() {
         clearAllMocks()
@@ -79,9 +89,10 @@ class NavigatorScreenTripInstrumentedTests {
             setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
 
             tripFlow.update { Trip(123450, 9876540) }
+            waitForIdle()
 
-            onNodeWithTag(TRIP_PARTIAL).assertTextEquals("123,45")
-            onNodeWithTag(TRIP_TOTAL).assertTextEquals("9.876,54")
+            onNodeWithTag(TRIP_PARTIAL).assertTextEquals(formatter.format(123.45f))
+            onNodeWithTag(TRIP_TOTAL).assertTextEquals(formatter.format(9876.54f))
         }
     }
 
