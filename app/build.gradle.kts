@@ -63,6 +63,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.hilt.android)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ksoup.kotlinx)
+    implementation(libs.ksoup.network)
     implementation(libs.paging.compose)
     implementation(libs.vtm)
     implementation(libs.vtm.themes)
