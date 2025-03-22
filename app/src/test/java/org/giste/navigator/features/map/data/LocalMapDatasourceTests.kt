@@ -16,24 +16,30 @@
 package org.giste.navigator.features.map.data
 
 import kotlinx.coroutines.test.runTest
+import org.giste.navigator.features.map.data.LocalMapDatasource.Companion.BASE_PATH
 import org.giste.navigator.features.map.domain.MapRegion
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.pathString
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LocalMapDatasourceTests {
 
     @Test
-    fun `must find all maps in the directory`(@TempDir tempDir: File) = runTest {
+    fun `must find all maps in the directory`(@TempDir tempDir: Path) = runTest {
         val mapDatasource = LocalMapDatasource(tempDir)
-        val mapsDir = File(tempDir, "/maps${MapRegion.Europe.remotePath}")
+        val mapsDir = Paths.get(tempDir.pathString, BASE_PATH)
+        val regionDir = Paths.get(mapsDir.pathString, MapRegion.Europe.localDir)
         val expectedMaps = listOf("map1", "map2")
-        mapsDir.mkdirs()
+        regionDir.createDirectories()
         expectedMaps.forEach {
-            File(mapsDir, "${it}.map").createNewFile()
+            Paths.get(regionDir.pathString, "${it}.map").createFile()
         }
 
         val actualMaps = mapDatasource.getAvailableMaps(MapRegion.Europe)

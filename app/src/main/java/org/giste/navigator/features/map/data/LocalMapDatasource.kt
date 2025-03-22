@@ -22,35 +22,41 @@ import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
 import org.giste.navigator.features.map.domain.LocalMap
 import org.giste.navigator.features.map.domain.MapRegion
-import java.io.File
-import java.time.Instant
+import java.nio.file.Path
+import java.nio.file.Paths
 import javax.inject.Inject
+import kotlin.io.path.exists
+import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.pathString
 
 private const val TAG = "LocalMapDatasource"
 
 class LocalMapDatasource @Inject constructor(
-    private val baseDir: File,
+    private val baseDir: Path,
     @IoDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     companion object {
-        const val BASE_PATH = "/maps"
-        const val MAP_EXTENSION = ".map"
+        const val BASE_PATH = "maps"
     }
 
     suspend fun getAvailableMaps(region: MapRegion): List<LocalMap> {
-        val regionDir = File(baseDir, "$BASE_PATH${region.localPath}")
+        val baseDir = Paths.get(baseDir.pathString, BASE_PATH)
+        val regionDir = Paths.get(baseDir.pathString, region.localDir)
         val maps = mutableListOf<LocalMap>()
 
         withContext(dispatcher) {
-            if (regionDir.exists() && regionDir.isDirectory) {
-                regionDir.walk()
-                    .filter { it.name.endsWith(MAP_EXTENSION) }
-                    .sortedBy { it.name }
+            if (regionDir.exists() && regionDir.isDirectory()) {
+                regionDir.listDirectoryEntries("*.map")
+                    .sortedBy { it.nameWithoutExtension }
                     .map {
                         LocalMap(
-                            name = it.name.removeSuffix(MAP_EXTENSION),
-                            path = "/${it.name}",
-                            lastModified = Instant.ofEpochMilli(it.lastModified())
+                            name = it.nameWithoutExtension,
+                            path = it.name,
+                            lastModified = it.getLastModifiedTime().toInstant()
                         )
                     }
                     .forEach {
