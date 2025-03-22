@@ -30,10 +30,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.getLastModifiedTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RemoteMapDatasourceTests {
@@ -57,10 +58,11 @@ class RemoteMapDatasourceTests {
     }
 
     @Test
-    fun `must download existent map`(@TempDir temporaryDir: File) = runTest {
+    fun `download existing map`(@TempDir temporaryDir: Path) = runTest {
         val availableMaps = remoteMapDatasource.getAvailableMaps(MapRegion.AustraliaOceania)
         val mapToDownload = availableMaps.first { it.name == "ile-de-clipperton" }
-        val tempFile = File(temporaryDir, "${mapToDownload.name}${MAP_EXTENSION}")
+        val tempFile = temporaryDir.resolve("${mapToDownload.name}${MAP_EXTENSION}")
+
         val downloadStates = mutableListOf<RemoteMapDatasource.DownloadState>()
 
         val job = launch {
@@ -70,12 +72,12 @@ class RemoteMapDatasourceTests {
 
         assertTrue(downloadStates.first() is Downloading)
         assertTrue(downloadStates.last() is Finished)
-        assertEquals(mapToDownload.lastModified.toEpochMilli(), tempFile.lastModified())
+        assertEquals(mapToDownload.lastModified, tempFile.getLastModifiedTime().toInstant())
     }
 
     @Test
-    fun `must have error when downloading non existent map`(@TempDir temporaryDir: File) = runTest {
-        val tempFile = File(temporaryDir, "no_existent.map")
+    fun `must have error when downloading non existent map`(@TempDir temporaryDir: Path) = runTest {
+        val tempFile = temporaryDir.resolve("no_existent.map")
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
         val nonExistentMap = RemoteMap(
             name = "non_existent",

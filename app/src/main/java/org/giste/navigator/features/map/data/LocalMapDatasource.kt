@@ -23,7 +23,6 @@ import org.giste.navigator.IoDispatcher
 import org.giste.navigator.features.map.domain.LocalMap
 import org.giste.navigator.features.map.domain.MapRegion
 import java.nio.file.Path
-import java.nio.file.Paths
 import javax.inject.Inject
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
@@ -31,7 +30,6 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.pathString
 
 private const val TAG = "LocalMapDatasource"
 
@@ -44,8 +42,7 @@ class LocalMapDatasource @Inject constructor(
     }
 
     suspend fun getAvailableMaps(region: MapRegion): List<LocalMap> {
-        val baseDir = Paths.get(baseDir.pathString, BASE_PATH)
-        val regionDir = Paths.get(baseDir.pathString, region.localDir)
+        val regionDir = baseDir.resolve(BASE_PATH).resolve(region.localDir)
         val maps = mutableListOf<LocalMap>()
 
         withContext(dispatcher) {

@@ -29,13 +29,16 @@ import org.giste.navigator.IoDispatcher
 import org.giste.navigator.features.map.domain.MapRegion
 import org.giste.navigator.features.map.domain.RemoteMap
 import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileOutputStream
 import java.net.URL
+import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.outputStream
+import kotlin.io.path.setLastModifiedTime
 
 private const val TAG = "RemoteMapDatasource"
 
@@ -81,23 +84,23 @@ class RemoteMapDatasource @Inject constructor(
         return maps
     }
 
-    fun downloadMap(remoteMap: RemoteMap, destination: File): Flow<DownloadState> {
+    fun downloadMap(remoteMap: RemoteMap, destination: Path): Flow<DownloadState> {
         var bytesProcessed = 0
 
         return flow {
             emit(DownloadState.Downloading(0))
 
             try {
-                var url = URL(remoteMap.url)
+                val url = URL(remoteMap.url)
                 val totalBytes = convertSize(remoteMap.size).toDouble()
 
                 Log.d(TAG, "Bytes to download: $totalBytes")
 
                 emit(DownloadState.Downloading(0))
-                if (destination.exists()) destination.delete()
+                destination.deleteIfExists()
                 url.openStream().use {
                     BufferedInputStream(it).use { input ->
-                        FileOutputStream(destination).use { output ->
+                        destination.outputStream().use { output ->
                             val data = ByteArray(DEFAULT_BUFFER_SIZE)
                             var byteCount: Int
                             while (
@@ -115,8 +118,7 @@ class RemoteMapDatasource @Inject constructor(
                         }
                     }
                 }
-
-                destination.setLastModified(remoteMap.lastModified.toEpochMilli())
+                destination.setLastModifiedTime(FileTime.from(remoteMap.lastModified))
                 emit(DownloadState.Finished)
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
