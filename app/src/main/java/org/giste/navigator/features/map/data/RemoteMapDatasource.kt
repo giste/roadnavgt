@@ -50,7 +50,7 @@ class RemoteMapDatasource @Inject constructor(
     }
 
     suspend fun getAvailableMaps(region: MapRegion): List<RemoteMap> {
-        val remoteUrl = "$BASE_URL${region.regionPath}"
+        val remoteUrl = "$BASE_URL${region.remotePath}"
         Log.d(TAG, "Get maps for $remoteUrl")
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
         val maps: MutableList<RemoteMap> = mutableListOf()
