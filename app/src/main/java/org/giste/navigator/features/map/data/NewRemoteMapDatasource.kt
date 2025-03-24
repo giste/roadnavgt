@@ -26,10 +26,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
-import org.giste.navigator.features.map.domain.MapRegion
-import org.giste.navigator.features.map.domain.RemoteMap
+import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.Region
 import java.io.BufferedInputStream
-import java.net.URL
+import java.net.URI
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
 import java.time.LocalDateTime
@@ -42,63 +43,75 @@ import kotlin.io.path.setLastModifiedTime
 
 private const val TAG = "RemoteMapDatasource"
 
-class RemoteMapDatasource @Inject constructor(
+class NewRemoteMapDatasource @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     companion object {
         const val BASE_URL =
-            "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5"
+            "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/v5/"
         const val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm"
         const val MAP_EXTENSION = ".map"
     }
 
-    suspend fun getAvailableMaps(region: MapRegion): List<RemoteMap> {
-        val remoteUrl = "$BASE_URL${region.remotePath}"
-        Log.d(TAG, "Get maps for $remoteUrl")
+    suspend fun getAvailableMaps(region: Region): Result<List<NewMapSource>> {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val maps: MutableList<RemoteMap> = mutableListOf()
+        val maps = mutableListOf<NewMapSource>()
 
-        withContext(dispatcher) {
-            Ksoup.parseGetRequest(remoteUrl)
-                .getElementsByTag("a")
-                .filter { it.ownText().contains(MAP_EXTENSION) }
-                .forEach {
-                    Log.d(TAG, "<a>: ${it.ownText()}")
-                    it.parent()?.parent()?.let { parent ->
-                        Log.d(TAG, "Parent: ${parent.text()}")
+        try {
+            withContext(dispatcher) {
+                val uri = URI.create(BASE_URL).resolve(region.path)
+                Log.d(TAG, "Parsing $uri")
 
-                        val name = it.text().removeSuffix(MAP_EXTENSION)
-                        val url = "$remoteUrl/${it.attr("href")}"
-                        val lastModified = LocalDateTime.parse(parent.child(2).text(), formatter)
-                            .toInstant(ZoneOffset.ofHours(0))
-                        val size = parent.child(3).text()
+                Ksoup.parseGetRequest(uri.toString())
+                    .getElementsByTag("a")
+                    .filter { it.ownText().contains(MAP_EXTENSION) }
+                    .forEach {
+                        Log.d(TAG, "<a>: ${it.ownText()}")
+                        it.parent()?.parent()?.let { parent ->
+                            Log.d(TAG, "Parent: ${parent.text()}")
 
-                        val remoteMap = RemoteMap(name, url, lastModified, size)
-                        maps.add(remoteMap)
+                            val path = it.attr("href")
+                            val lastModified =
+                                LocalDateTime.parse(parent.child(2).text(), formatter)
+                                    .toInstant(ZoneOffset.ofHours(0))
+                            val size = parent.child(3).text()
 
-                        Log.d(TAG, "Found remote map $remoteMap")
+                            val mapSource = NewMapSource(
+                                map = Map.entries.first { it.region == region && it.path == path },
+                                size = size,
+                                lastModified = lastModified
+                            )
+                            maps.add(mapSource)
+
+                            Log.d(TAG, "Found remote map $mapSource")
+                        }
                     }
-                }
+            }
+        } catch(e: Exception) {
+            return Result.failure(e)
         }
 
-        return maps
+        return Result.success(maps)
     }
 
-    fun downloadMap(remoteMap: RemoteMap, destination: Path): Flow<DownloadState> {
+    fun downloadMap(mapSource: NewMapSource, destination: Path): Flow<DownloadState> {
         var bytesProcessed = 0
 
         return flow {
             emit(DownloadState.Downloading(0))
 
             try {
-                val url = URL(remoteMap.url)
-                val totalBytes = convertSize(remoteMap.size).toDouble()
+                val uri = URI.create(BASE_URL)
+                    .resolve(mapSource.map.region.path)
+                    .resolve(mapSource.map.path)
+                Log.i(TAG, "Downloading $uri")
 
+                val totalBytes = convertSize(mapSource.size).toDouble()
                 Log.d(TAG, "Bytes to download: $totalBytes")
 
                 emit(DownloadState.Downloading(0))
                 destination.deleteIfExists()
-                url.openStream().use {
+                uri.toURL().openStream().use {
                     BufferedInputStream(it).use { input ->
                         destination.outputStream().use { output ->
                             val data = ByteArray(DEFAULT_BUFFER_SIZE)
@@ -118,7 +131,7 @@ class RemoteMapDatasource @Inject constructor(
                         }
                     }
                 }
-                destination.setLastModifiedTime(FileTime.from(remoteMap.lastModified))
+                destination.setLastModifiedTime(FileTime.from(mapSource.lastModified))
                 emit(DownloadState.Finished)
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())

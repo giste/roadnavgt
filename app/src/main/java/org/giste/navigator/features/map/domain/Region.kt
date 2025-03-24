@@ -15,10 +15,15 @@
 
 package org.giste.navigator.features.map.domain
 
-import java.time.Instant
-
-data class LocalMap(
-    val name: String,
-    val path: String,
-    val lastModified: Instant,
-)
+enum class Region(val path: String) {
+    AFRICA("africa/"),
+    ASIA("asia/"),
+    CHINA("asia/china/"),
+    AUSTRALIA_OCEANIA("australia-oceania/"),
+    CENTRAL_AMERICA("central-america/"),
+    EUROPE("europe/"),
+    NORTH_AMERICA("north-america/"),
+    CANADA("north-america/canada/"),
+    RUSSIA("russia/"),
+    SOUTH_AMERICA("south-america/"),
+}

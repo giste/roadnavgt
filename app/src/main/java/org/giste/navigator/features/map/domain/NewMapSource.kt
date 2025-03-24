@@ -15,19 +15,12 @@
 
 package org.giste.navigator.features.map.domain
 
-enum class MapRegion(
-    val regionName: String,
-    val remotePath: String,
-    val localDir: String,
-) {
-    Africa("Africa", "/africa", "/africa"),
-    Asia("Asia", "/asia", "/asia"),
-    China("China", "/asia/china", "/china"),
-    AustraliaOceania("Australia-Oceania", "/australia-oceania", "/australia-oceania"),
-    CentralAmerica("Central America", "/central-america", "/central-america"),
-    Europe("Europe", "/europe", "europe"),
-    NorthAmerica("North America", "/north-america", "/north-america"),
-    Canada("Canada", "/north-america/canada", "/canada"),
-    Russia("Russia", "/russia", "/russia"),
-    SouthAmerica("South America", "/south-america", "/south-america"),
-}
+import java.time.Instant
+
+data class NewMapSource(
+    val map: Map,
+    val size: String,
+    val lastModified: Instant,
+    val downloaded: Boolean = false,
+    val updatable: Boolean = false,
+)

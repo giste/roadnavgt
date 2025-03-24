@@ -18,13 +18,13 @@ package org.giste.navigator.features.map.data
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
-import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.MAP_EXTENSION
-import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Downloading
-import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Failed
-import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Finished
-import org.giste.navigator.features.map.domain.MapRegion
-import org.giste.navigator.features.map.domain.RemoteMap
+import org.giste.navigator.features.map.data.NewRemoteMapDatasource.Companion.DATE_TIME_FORMAT
+import org.giste.navigator.features.map.data.NewRemoteMapDatasource.DownloadState
+import org.giste.navigator.features.map.data.NewRemoteMapDatasource.DownloadState.Downloading
+import org.giste.navigator.features.map.data.NewRemoteMapDatasource.DownloadState.Finished
+import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.Region
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -38,32 +38,37 @@ import kotlin.io.path.getLastModifiedTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RemoteMapDatasourceTests {
-    private val remoteMapDatasource = RemoteMapDatasource()
+    private val remoteMapDatasource = NewRemoteMapDatasource()
 
     @Test
     fun `must retrieve all maps of a region`() = runTest {
-        val expectedMapNames = listOf(
-            "greenland",
-            "mexico",
-            "us-midwest",
-            "us-northeast",
-            "us-south",
-            "us-west"
+        val expectedMaps = listOf(
+            Map.GREENLAND,
+            Map.MEXICO,
+            Map.US_MIDWEST,
+            Map.US_NORTHEAST,
+            Map.US_SOUTH,
+            Map.US_WEST,
         )
 
-        val actualMapNames = remoteMapDatasource.getAvailableMaps(MapRegion.NorthAmerica)
-            .map { it.name }
+        val actualMaps = remoteMapDatasource.getAvailableMaps(Region.NORTH_AMERICA)
+            .getOrThrow()
+            .map { it.map }
 
-        assertEquals(expectedMapNames, actualMapNames)
+        assertEquals(expectedMaps, actualMaps)
     }
 
     @Test
     fun `download existing map`(@TempDir temporaryDir: Path) = runTest {
-        val availableMaps = remoteMapDatasource.getAvailableMaps(MapRegion.AustraliaOceania)
-        val mapToDownload = availableMaps.first { it.name == "ile-de-clipperton" }
-        val tempFile = temporaryDir.resolve("${mapToDownload.name}${MAP_EXTENSION}")
+        val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
+        val mapToDownload = NewMapSource(
+            map = Map.ILE_DE_CLIPPERTON,
+            size = "432K",
+            lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
+                .toInstant(ZoneOffset.ofHours(0)))
+        val tempFile = temporaryDir.resolve(mapToDownload.map.path)
 
-        val downloadStates = mutableListOf<RemoteMapDatasource.DownloadState>()
+        val downloadStates = mutableListOf<DownloadState>()
 
         val job = launch {
             remoteMapDatasource.downloadMap(mapToDownload, tempFile).toList(downloadStates)
@@ -73,26 +78,5 @@ class RemoteMapDatasourceTests {
         assertTrue(downloadStates.first() is Downloading)
         assertTrue(downloadStates.last() is Finished)
         assertEquals(mapToDownload.lastModified, tempFile.getLastModifiedTime().toInstant())
-    }
-
-    @Test
-    fun `must have error when downloading non existent map`(@TempDir temporaryDir: Path) = runTest {
-        val tempFile = temporaryDir.resolve("no_existent.map")
-        val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val nonExistentMap = RemoteMap(
-            name = "non_existent",
-            url = "${RemoteMapDatasource.BASE_URL}/non_existent.map",
-            lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
-                .toInstant(ZoneOffset.ofHours(0)),
-            size = "500K"
-        )
-        val downloadStates = mutableListOf<RemoteMapDatasource.DownloadState>()
-
-        val job = launch {
-            remoteMapDatasource.downloadMap(nonExistentMap, tempFile).toList(downloadStates)
-        }
-        job.join()
-
-        assertTrue(downloadStates.last() is Failed)
     }
 }

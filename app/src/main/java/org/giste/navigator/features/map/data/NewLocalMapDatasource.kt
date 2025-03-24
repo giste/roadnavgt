@@ -20,8 +20,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
-import org.giste.navigator.features.map.domain.LocalMap
-import org.giste.navigator.features.map.domain.MapRegion
+import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.Region
 import java.nio.file.Path
 import javax.inject.Inject
 import kotlin.io.path.exists
@@ -29,11 +30,10 @@ import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
-import kotlin.io.path.nameWithoutExtension
 
 private const val TAG = "LocalMapDatasource"
 
-class LocalMapDatasource @Inject constructor(
+class NewLocalMapDatasource @Inject constructor(
     private val baseDir: Path,
     @IoDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
@@ -41,28 +41,35 @@ class LocalMapDatasource @Inject constructor(
         const val BASE_PATH = "maps"
     }
 
-    suspend fun getAvailableMaps(region: MapRegion): List<LocalMap> {
-        val regionDir = baseDir.resolve(BASE_PATH).resolve(region.localDir)
-        val maps = mutableListOf<LocalMap>()
+    suspend fun getAvailableMaps(region: Region): Result<List<NewMapSource>> {
+        val maps = mutableListOf<NewMapSource>()
 
-        withContext(dispatcher) {
-            if (regionDir.exists() && regionDir.isDirectory()) {
-                regionDir.listDirectoryEntries("*.map")
-                    .sortedBy { it.nameWithoutExtension }
-                    .map {
-                        LocalMap(
-                            name = it.nameWithoutExtension,
-                            path = it.name,
-                            lastModified = it.getLastModifiedTime().toInstant()
-                        )
-                    }
-                    .forEach {
-                        Log.d(TAG, "Found map: $it")
-                        maps.add(it)
-                    }
+        try {
+            val regionDir = baseDir.resolve(BASE_PATH).resolve(region.path)
+
+            withContext(dispatcher) {
+                if (regionDir.exists() && regionDir.isDirectory()) {
+                    regionDir.listDirectoryEntries("*.map")
+                        .map { foundMap ->
+                            NewMapSource(
+                                map = Map.entries.first {
+                                    it.region == region && it.path == foundMap.name
+                                },
+                                size = "0",
+                                lastModified = foundMap.getLastModifiedTime().toInstant(),
+                                downloaded = true,
+                            )
+                        }
+                        .forEach {
+                            Log.d(TAG, "Found map: $it")
+                            maps.add(it)
+                        }
+                }
             }
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
 
-        return maps
+        return Result.success(maps)
     }
 }

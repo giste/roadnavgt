@@ -15,11 +15,20 @@
 
 package org.giste.navigator.features.map.domain
 
-import java.time.Instant
+enum class Map(val region: Region, val path: String) {
+    // Australia-Oceania
+    ILE_DE_CLIPPERTON(Region.AUSTRALIA_OCEANIA, "ile-de-clipperton.map"),
 
-data class RemoteMap(
-    val name: String,
-    val url: String,
-    val lastModified: Instant,
-    val size: String,
-)
+    // Europe
+    SPAIN(Region.EUROPE, "spain.map"),
+    PORTUGAL(Region.EUROPE, "portugal.map"),
+
+    // North America
+    GREENLAND(Region.NORTH_AMERICA, "greenland.map"),
+    MEXICO(Region.NORTH_AMERICA, "mexico.map"),
+    US_MIDWEST(Region.NORTH_AMERICA, "us-midwest.map"),
+    US_NORTHEAST(Region.NORTH_AMERICA, "us-northeast.map"),
+    US_SOUTH(Region.NORTH_AMERICA, "us-south.map"),
+    US_WEST(Region.NORTH_AMERICA, "us-west.map"),
+
+}
