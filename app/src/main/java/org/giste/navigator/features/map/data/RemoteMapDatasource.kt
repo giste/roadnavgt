@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
 import org.giste.navigator.features.map.domain.Map
-import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
 import java.io.BufferedInputStream
 import java.net.URI
@@ -43,7 +42,7 @@ import kotlin.io.path.setLastModifiedTime
 
 private const val TAG = "RemoteMapDatasource"
 
-class NewRemoteMapDatasource @Inject constructor(
+class RemoteMapDatasource @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     companion object {
@@ -53,9 +52,9 @@ class NewRemoteMapDatasource @Inject constructor(
         const val MAP_EXTENSION = ".map"
     }
 
-    suspend fun getAvailableMaps(region: Region): Result<List<NewMapSource>> {
+    suspend fun getAvailableMaps(region: Region): Result<List<Map>> {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val maps = mutableListOf<NewMapSource>()
+        val maps = mutableListOf<Map>()
 
         try {
             withContext(dispatcher) {
@@ -67,23 +66,29 @@ class NewRemoteMapDatasource @Inject constructor(
                     .filter { it.ownText().contains(MAP_EXTENSION) }
                     .forEach {
                         Log.d(TAG, "<a>: ${it.ownText()}")
-                        it.parent()?.parent()?.let { parent ->
-                            Log.d(TAG, "Parent: ${parent.text()}")
+                        try {
+                            it.parent()?.parent()?.let { parent ->
+                                Log.d(TAG, "Parent: ${parent.text()}")
 
-                            val path = it.attr("href")
-                            val lastModified =
-                                LocalDateTime.parse(parent.child(2).text(), formatter)
-                                    .toInstant(ZoneOffset.ofHours(0))
-                            val size = parent.child(3).text()
+                                val fileName = it.attr("href")
+                                val lastModified =
+                                    LocalDateTime.parse(parent.child(2).text(), formatter)
+                                        .toInstant(ZoneOffset.ofHours(0))
+                                val size = convertSize(parent.child(3).text())
 
-                            val mapSource = NewMapSource(
-                                map = Map.entries.first { it.region == region && it.path == path },
-                                size = size,
-                                lastModified = lastModified
-                            )
-                            maps.add(mapSource)
+                                val map = Map(
+                                    region = region,
+                                    fileName = fileName,
+                                    size = size,
+                                    lastModified = lastModified,
+                                )
+                                maps.add(map)
 
-                            Log.d(TAG, "Found remote map $mapSource")
+                                Log.d(TAG, "Found remote map $map")
+                            }
+                        } catch (e: Exception) {
+                            // Log error and continue with next map
+                            Log.e(TAG, e.toString())
                         }
                     }
             }
@@ -94,7 +99,7 @@ class NewRemoteMapDatasource @Inject constructor(
         return Result.success(maps)
     }
 
-    fun downloadMap(mapSource: NewMapSource, destination: Path): Flow<DownloadState> {
+    fun downloadMap(map: Map, destination: Path): Flow<DownloadState> {
         var bytesProcessed = 0
 
         return flow {
@@ -102,11 +107,11 @@ class NewRemoteMapDatasource @Inject constructor(
 
             try {
                 val uri = URI.create(BASE_URL)
-                    .resolve(mapSource.map.region.path)
-                    .resolve(mapSource.map.path)
+                    .resolve(map.region.path)
+                    .resolve(map.fileName)
                 Log.i(TAG, "Downloading $uri")
 
-                val totalBytes = convertSize(mapSource.size).toDouble()
+                val totalBytes = map.size.toDouble()
                 Log.d(TAG, "Bytes to download: $totalBytes")
 
                 emit(DownloadState.Downloading(0))
@@ -131,7 +136,7 @@ class NewRemoteMapDatasource @Inject constructor(
                         }
                     }
                 }
-                destination.setLastModifiedTime(FileTime.from(mapSource.lastModified))
+                destination.setLastModifiedTime(FileTime.from(map.lastModified))
                 emit(DownloadState.Finished)
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())

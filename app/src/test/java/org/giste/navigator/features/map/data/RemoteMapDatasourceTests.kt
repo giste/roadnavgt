@@ -18,12 +18,11 @@ package org.giste.navigator.features.map.data
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import org.giste.navigator.features.map.data.NewRemoteMapDatasource.Companion.DATE_TIME_FORMAT
-import org.giste.navigator.features.map.data.NewRemoteMapDatasource.DownloadState
-import org.giste.navigator.features.map.data.NewRemoteMapDatasource.DownloadState.Downloading
-import org.giste.navigator.features.map.data.NewRemoteMapDatasource.DownloadState.Finished
+import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
+import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState
+import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Downloading
+import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Finished
 import org.giste.navigator.features.map.domain.Map
-import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -38,35 +37,37 @@ import kotlin.io.path.getLastModifiedTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RemoteMapDatasourceTests {
-    private val remoteMapDatasource = NewRemoteMapDatasource()
+    private val remoteMapDatasource = RemoteMapDatasource()
 
     @Test
     fun `must retrieve all maps of a region`() = runTest {
         val expectedMaps = listOf(
-            Map.GREENLAND,
-            Map.MEXICO,
-            Map.US_MIDWEST,
-            Map.US_NORTHEAST,
-            Map.US_SOUTH,
-            Map.US_WEST,
+            "greenland.map",
+            "mexico.map",
+            "us-midwest.map",
+            "us-northeast.map",
+            "us-south.map",
+            "us-west.map",
         )
 
         val actualMaps = remoteMapDatasource.getAvailableMaps(Region.NORTH_AMERICA)
             .getOrThrow()
-            .map { it.map }
+            .map { it.fileName }
 
         assertEquals(expectedMaps, actualMaps)
     }
 
     @Test
-    fun `download existing map`(@TempDir temporaryDir: Path) = runTest {
+    fun `must download existing map`(@TempDir temporaryDir: Path) = runTest {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val mapToDownload = NewMapSource(
-            map = Map.ILE_DE_CLIPPERTON,
-            size = "432K",
+        val mapToDownload = Map(
+            region = Region.AUSTRALIA_OCEANIA,
+            fileName = "ile-de-clipperton.map",
+            size = 432 * 1024L,
             lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
-                .toInstant(ZoneOffset.ofHours(0)))
-        val tempFile = temporaryDir.resolve(mapToDownload.map.path)
+                .toInstant(ZoneOffset.ofHours(0)),
+        )
+        val tempFile = temporaryDir.resolve(mapToDownload.fileName)
 
         val downloadStates = mutableListOf<DownloadState>()
 

@@ -16,10 +16,9 @@
 package org.giste.navigator.features.map.data
 
 import kotlinx.coroutines.test.runTest
-import org.giste.navigator.features.map.data.NewLocalMapDatasource.Companion.BASE_PATH
-import org.giste.navigator.features.map.data.NewRemoteMapDatasource.Companion.DATE_TIME_FORMAT
+import org.giste.navigator.features.map.data.LocalMapDatasource.Companion.BASE_PATH
+import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
 import org.giste.navigator.features.map.domain.Map
-import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -38,7 +37,7 @@ import kotlin.io.path.setLastModifiedTime
 class LocalMapDatasourceTests {
     @Test
     fun `must find all maps in the directory`(@TempDir tempDir: Path) = runTest {
-        val mapDatasource = NewLocalMapDatasource(tempDir)
+        val mapDatasource = LocalMapDatasource(tempDir)
         val regionDir = tempDir
             .resolve(BASE_PATH)
             .resolve(Region.EUROPE.path)
@@ -47,11 +46,11 @@ class LocalMapDatasourceTests {
         val lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
             .toInstant(ZoneOffset.ofHours(0))
         val expectedMaps = listOf(
-            NewMapSource(Map.SPAIN, "0", lastModified, true),
-            NewMapSource(Map.PORTUGAL, "0", lastModified, true),
+            Map(Region.EUROPE, "spain.map", 0L, lastModified, true),
+            Map(Region.EUROPE, "portugal.map", 0L, lastModified, true),
         )
         expectedMaps.forEach {
-            regionDir.resolve(it.map.path)
+            regionDir.resolve(it.fileName)
                 .createFile()
                 .setLastModifiedTime(FileTime.from(lastModified))
         }
