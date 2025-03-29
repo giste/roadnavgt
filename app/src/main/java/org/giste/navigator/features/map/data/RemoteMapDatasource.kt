@@ -26,8 +26,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
+import org.giste.navigator.utils.DownloadState
 import java.io.BufferedInputStream
 import java.net.URI
 import java.nio.file.Path
@@ -52,9 +53,9 @@ class RemoteMapDatasource @Inject constructor(
         const val MAP_EXTENSION = ".map"
     }
 
-    suspend fun getAvailableMaps(region: Region): Result<List<Map>> {
+    suspend fun getAvailableMaps(region: Region): List<NewMapSource> {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val maps = mutableListOf<Map>()
+        val newMapSources = mutableListOf<NewMapSource>()
 
         try {
             withContext(dispatcher) {
@@ -76,15 +77,15 @@ class RemoteMapDatasource @Inject constructor(
                                         .toInstant(ZoneOffset.ofHours(0))
                                 val size = convertSize(parent.child(3).text())
 
-                                val map = Map(
+                                val newMapSource = NewMapSource(
                                     region = region,
                                     fileName = fileName,
                                     size = size,
                                     lastModified = lastModified,
                                 )
-                                maps.add(map)
+                                newMapSources.add(newMapSource)
 
-                                Log.d(TAG, "Found remote map $map")
+                                Log.d(TAG, "Found remote map $newMapSource")
                             }
                         } catch (e: Exception) {
                             // Log error and continue with next map
@@ -93,13 +94,14 @@ class RemoteMapDatasource @Inject constructor(
                     }
             }
         } catch(e: Exception) {
-            return Result.failure(e)
+            // Log exception and continue
+            Log.e(TAG, e.toString())
         }
 
-        return Result.success(maps)
+        return newMapSources
     }
 
-    fun downloadMap(map: Map, destination: Path): Flow<DownloadState> {
+    fun downloadMap(newMapSource: NewMapSource, destination: Path): Flow<DownloadState> {
         var bytesProcessed = 0
 
         return flow {
@@ -107,11 +109,11 @@ class RemoteMapDatasource @Inject constructor(
 
             try {
                 val uri = URI.create(BASE_URL)
-                    .resolve(map.region.path)
-                    .resolve(map.fileName)
+                    .resolve(newMapSource.region.path)
+                    .resolve(newMapSource.fileName)
                 Log.i(TAG, "Downloading $uri")
 
-                val totalBytes = map.size.toDouble()
+                val totalBytes = newMapSource.size.toDouble()
                 Log.d(TAG, "Bytes to download: $totalBytes")
 
                 emit(DownloadState.Downloading(0))
@@ -136,7 +138,7 @@ class RemoteMapDatasource @Inject constructor(
                         }
                     }
                 }
-                destination.setLastModifiedTime(FileTime.from(map.lastModified))
+                destination.setLastModifiedTime(FileTime.from(newMapSource.lastModified))
                 emit(DownloadState.Finished)
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
@@ -161,11 +163,5 @@ class RemoteMapDatasource @Inject constructor(
         sizeString = if (multiplier == 1) mapSize else mapSize.dropLast(1)
 
         return sizeString.toDouble().times(multiplier).toLong()
-    }
-
-    sealed class DownloadState {
-        data class Downloading(val progress: Int) : DownloadState()
-        object Finished : DownloadState()
-        data class Failed(val exception: Exception) : DownloadState()
     }
 }

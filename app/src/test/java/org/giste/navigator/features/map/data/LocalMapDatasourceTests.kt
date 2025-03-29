@@ -18,7 +18,7 @@ package org.giste.navigator.features.map.data
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.map.data.LocalMapDatasource.Companion.BASE_PATH
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -37,7 +37,7 @@ import kotlin.io.path.setLastModifiedTime
 class LocalMapDatasourceTests {
     @Test
     fun `must find all maps in the directory`(@TempDir tempDir: Path) = runTest {
-        val mapDatasource = LocalMapDatasource(tempDir)
+        val mapDatasource = LocalMapDatasource()
         val regionDir = tempDir
             .resolve(BASE_PATH)
             .resolve(Region.EUROPE.path)
@@ -45,18 +45,18 @@ class LocalMapDatasourceTests {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
         val lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
             .toInstant(ZoneOffset.ofHours(0))
-        val expectedMaps = listOf(
-            Map(Region.EUROPE, "spain.map", 0L, lastModified, true),
-            Map(Region.EUROPE, "portugal.map", 0L, lastModified, true),
+        val expectedNewMapSources = listOf(
+            NewMapSource(Region.EUROPE, "spain.map", 0L, lastModified, true),
+            NewMapSource(Region.EUROPE, "portugal.map", 0L, lastModified, true),
         )
-        expectedMaps.forEach {
+        expectedNewMapSources.forEach {
             regionDir.resolve(it.fileName)
                 .createFile()
                 .setLastModifiedTime(FileTime.from(lastModified))
         }
 
-        val actualMaps = mapDatasource.getAvailableMaps(Region.EUROPE)
+        val actualMaps = mapDatasource.getDownloadedMaps(tempDir, Region.EUROPE)
 
-        assertEquals(expectedMaps, actualMaps.getOrThrow())
+        assertEquals(expectedNewMapSources, actualMaps)
     }
 }

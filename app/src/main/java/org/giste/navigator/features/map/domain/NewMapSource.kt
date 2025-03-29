@@ -17,7 +17,7 @@ package org.giste.navigator.features.map.domain
 
 import java.time.Instant
 
-data class Map(
+data class NewMapSource(
     val region: Region,
     val fileName: String,
     val size: Long,
@@ -25,4 +25,7 @@ data class Map(
     val downloaded: Boolean = false,
     val updatable: Boolean = false,
     val obsolete: Boolean = false,
-)
+) {
+    val path: String
+        get() = "${region.path}$fileName"
+}

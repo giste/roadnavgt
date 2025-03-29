@@ -19,11 +19,11 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
-import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState
-import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Downloading
-import org.giste.navigator.features.map.data.RemoteMapDatasource.DownloadState.Finished
-import org.giste.navigator.features.map.domain.Map
+import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
+import org.giste.navigator.utils.DownloadState
+import org.giste.navigator.utils.DownloadState.Downloading
+import org.giste.navigator.utils.DownloadState.Finished
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -51,7 +51,6 @@ class RemoteMapDatasourceTests {
         )
 
         val actualMaps = remoteMapDatasource.getAvailableMaps(Region.NORTH_AMERICA)
-            .getOrThrow()
             .map { it.fileName }
 
         assertEquals(expectedMaps, actualMaps)
@@ -60,24 +59,24 @@ class RemoteMapDatasourceTests {
     @Test
     fun `must download existing map`(@TempDir temporaryDir: Path) = runTest {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val mapToDownload = Map(
+        val newMapSourceToDownload = NewMapSource(
             region = Region.AUSTRALIA_OCEANIA,
             fileName = "ile-de-clipperton.map",
             size = 432 * 1024L,
             lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
                 .toInstant(ZoneOffset.ofHours(0)),
         )
-        val tempFile = temporaryDir.resolve(mapToDownload.fileName)
+        val tempFile = temporaryDir.resolve(newMapSourceToDownload.fileName)
 
         val downloadStates = mutableListOf<DownloadState>()
 
         val job = launch {
-            remoteMapDatasource.downloadMap(mapToDownload, tempFile).toList(downloadStates)
+            remoteMapDatasource.downloadMap(newMapSourceToDownload, tempFile).toList(downloadStates)
         }
         job.join()
 
         assertTrue(downloadStates.first() is Downloading)
         assertTrue(downloadStates.last() is Finished)
-        assertEquals(mapToDownload.lastModified, tempFile.getLastModifiedTime().toInstant())
+        assertEquals(newMapSourceToDownload.lastModified, tempFile.getLastModifiedTime().toInstant())
     }
 }
