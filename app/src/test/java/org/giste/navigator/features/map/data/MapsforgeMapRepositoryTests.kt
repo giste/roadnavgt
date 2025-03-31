@@ -101,7 +101,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `sets updatable maps`() = runTest {
+    fun `mark downloaded map as updatable when available is new`() = runTest {
         availableMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, newLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -131,7 +131,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `sets downloaded maps`() = runTest {
+    fun `marks map as downloaded when local map exists`() = runTest {
         availableMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -161,7 +161,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `sets obsolete maps`() = runTest {
+    fun `mark map as obsolete when is downloaded and it is not available`() = runTest {
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
         downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true))
@@ -208,5 +208,68 @@ class MapsforgeMapRepositoryTests {
 
         assertTrue(tempFile.notExists())
         assertTrue(destination.exists())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `marks map as available when is removed and available map exists`() = runTest {
+        availableMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
+        availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
+        availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
+        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true))
+        val expectedMaps = listOf(
+            NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified),
+            NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified),
+            NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified),
+        )
+        val mapRepository = MapsforgeMapRepository(
+            mapsDir = mapsDir,
+            remoteMapDatasource = remoteMapDatasource,
+            localMapDatasource = localMapDatasource,
+        )
+        var actualMaps = emptyList<NewMapSource>()
+
+        val job = launch {
+            mapRepository.getMaps().collect { actualMaps = (it) }
+        }
+        while(actualMaps.isEmpty()) {
+            advanceUntilIdle()
+        }
+        mapRepository.removeMap(downloadedMaps.first())
+        while (actualMaps.first().downloaded == true) {
+            advanceUntilIdle()
+        }
+        job.cancel()
+
+        assertEquals(expectedMaps, actualMaps)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `removes map from list when it is removed and is obsolete`() = runTest {
+        availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
+        availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
+        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true, obsolete = true))
+        val expectedMaps = availableMaps
+        val mapRepository = MapsforgeMapRepository(
+            mapsDir = mapsDir,
+            remoteMapDatasource = remoteMapDatasource,
+            localMapDatasource = localMapDatasource,
+        )
+        var actualMaps = emptyList<NewMapSource>()
+
+        val job = launch {
+            mapRepository.getMaps().collect { actualMaps = (it) }
+        }
+        while(actualMaps.isEmpty()) {
+            advanceUntilIdle()
+        }
+        mapRepository.removeMap(downloadedMaps.first())
+        while (actualMaps.size != 2) {
+            advanceUntilIdle()
+        }
+        job.cancel()
+
+        assertEquals(expectedMaps, actualMaps)
     }
 }

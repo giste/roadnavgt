@@ -45,6 +45,7 @@ class MapsforgeMapRepository @Inject constructor(
 ) {
     private val _maps = MutableStateFlow<List<NewMapSource>>(emptyList())
     private val maps = _maps.asStateFlow()
+    private val fullAvailableMaps = mutableMapOf<String, NewMapSource>()
 
     fun getMaps(): Flow<List<NewMapSource>> {
         return maps.onSubscription {
@@ -58,15 +59,16 @@ class MapsforgeMapRepository @Inject constructor(
         Region.entries.forEach {
             val availableMaps: MutableMap<String, NewMapSource> = remoteMapDatasource
                 .getAvailableMaps(it)
-                .associate { it.path to it }
+                .associate { it.id to it }
                 .toMutableMap()
+            fullAvailableMaps.putAll(availableMaps)
             val downloadedMaps: MutableMap<String, NewMapSource> = localMapDatasource
                 .getDownloadedMaps(mapsDir, it)
-                .associate { it.path to it }
+                .associate { it.id to it }
                 .toMutableMap()
 
             downloadedMaps.values.forEach { downloaded ->
-                availableMaps[downloaded.path]?.let { available ->
+                availableMaps[downloaded.id]?.let { available ->
                     // Available map for downloaded one
                     Log.d(TAG, "Marking map as downloaded $available")
                     newMapSources.add(
@@ -75,7 +77,7 @@ class MapsforgeMapRepository @Inject constructor(
                             updatable = available.lastModified > downloaded.lastModified
                         )
                     )
-                    availableMaps.remove(available.path)
+                    availableMaps.remove(available.id)
                 } ?: run {
                     Log.d(TAG, "Marking map as obsolete $downloaded")
                     // No available map for downloaded one
@@ -111,7 +113,9 @@ class MapsforgeMapRepository @Inject constructor(
                                 destination.outputStream().use {
                                     Log.d(TAG, "Moving temp file to ${destination.pathString}")
                                     tempFile.moveTo(destination, overwrite = true)
-                                    destination.setLastModifiedTime(FileTime.from(newMapSource.lastModified))
+                                    destination.setLastModifiedTime(
+                                        FileTime.from(newMapSource.lastModified)
+                                    )
                                 }
                             }
                             _maps.update {
@@ -136,4 +140,22 @@ class MapsforgeMapRepository @Inject constructor(
         }
     }
 
+    fun removeMap(mapSource: NewMapSource) {
+        val mapFile = mapsDir.resolve(mapSource.region.path)
+            .resolve(mapSource.fileName)
+
+        try {
+            mapFile.deleteIfExists()
+
+            val maps = _maps.value.toMutableList()
+            maps.remove(mapSource)
+            fullAvailableMaps[mapSource.id]?.let { maps.add(it.copy()) }
+            _maps.update {
+                maps.toList()
+            }
+        } catch(e: Exception) {
+            // Log exception and continue
+            Log.e(TAG, e.toString())
+        }
+    }
 }

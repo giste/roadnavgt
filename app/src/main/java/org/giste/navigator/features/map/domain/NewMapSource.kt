@@ -26,6 +26,6 @@ data class NewMapSource(
     val updatable: Boolean = false,
     val obsolete: Boolean = false,
 ) {
-    val path: String
+    val id: String
         get() = "${region.path}$fileName"
 }
