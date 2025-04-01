@@ -21,9 +21,9 @@ import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
 import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
-import org.giste.navigator.utils.DownloadState
-import org.giste.navigator.utils.DownloadState.Downloading
-import org.giste.navigator.utils.DownloadState.Finished
+import org.giste.navigator.util.DownloadState
+import org.giste.navigator.util.DownloadState.Downloading
+import org.giste.navigator.util.DownloadState.Finished
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

@@ -13,7 +13,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.giste.navigator.utils
+package org.giste.navigator.util
 
 sealed class DownloadState {
     data class Downloading(val percentage: Int): DownloadState()

@@ -27,7 +27,7 @@ import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
 import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
-import org.giste.navigator.utils.DownloadState.Finished
+import org.giste.navigator.util.DownloadState.Finished
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -41,6 +41,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.createFile
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
+import kotlin.io.path.pathString
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MapsforgeMapRepositoryTests {
@@ -91,9 +92,7 @@ class MapsforgeMapRepositoryTests {
         val job = launch {
             mapRepository.getMaps().collect { actualMaps = (it) }
         }
-        while(actualMaps.isEmpty()) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         job.cancel()
 
         assertEquals(availableMaps, actualMaps)
@@ -105,9 +104,24 @@ class MapsforgeMapRepositoryTests {
         availableMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, newLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
-        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true))
+        downloadedMaps.add(
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                oldLastModified,
+                downloaded = true
+            )
+        )
         val expectedMaps = listOf(
-            NewMapSource(Region.EUROPE, "spain.map", 0, newLastModified, downloaded = true, updatable = true),
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                newLastModified,
+                downloaded = true,
+                updatable = true
+            ),
             NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified),
             NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified),
         )
@@ -121,9 +135,7 @@ class MapsforgeMapRepositoryTests {
         val job = launch {
             mapRepository.getMaps().collect { actualMaps = (it) }
         }
-        while(actualMaps.isEmpty()) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         job.cancel()
 
         assertEquals(expectedMaps, actualMaps)
@@ -135,7 +147,15 @@ class MapsforgeMapRepositoryTests {
         availableMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
-        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true))
+        downloadedMaps.add(
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                oldLastModified,
+                downloaded = true
+            )
+        )
         val expectedMaps = listOf(
             NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true),
             NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified),
@@ -151,9 +171,7 @@ class MapsforgeMapRepositoryTests {
         val job = launch {
             mapRepository.getMaps().collect { actualMaps = (it) }
         }
-        while(actualMaps.isEmpty()) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         job.cancel()
 
         assertEquals(expectedMaps, actualMaps)
@@ -164,9 +182,24 @@ class MapsforgeMapRepositoryTests {
     fun `mark map as obsolete when is downloaded and it is not available`() = runTest {
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
-        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true))
+        downloadedMaps.add(
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                oldLastModified,
+                downloaded = true
+            )
+        )
         val expectedMaps = listOf(
-            NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true, obsolete = true),
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                oldLastModified,
+                downloaded = true,
+                obsolete = true
+            ),
             NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified),
             NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified),
         )
@@ -180,9 +213,7 @@ class MapsforgeMapRepositoryTests {
         val job = launch {
             mapRepository.getMaps().collect { actualMaps = (it) }
         }
-        while(actualMaps.isEmpty()) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         job.cancel()
 
         assertEquals(expectedMaps, actualMaps)
@@ -216,7 +247,15 @@ class MapsforgeMapRepositoryTests {
         availableMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
-        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true))
+        downloadedMaps.add(
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                oldLastModified,
+                downloaded = true
+            )
+        )
         val expectedMaps = listOf(
             NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified),
             NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified),
@@ -232,13 +271,9 @@ class MapsforgeMapRepositoryTests {
         val job = launch {
             mapRepository.getMaps().collect { actualMaps = (it) }
         }
-        while(actualMaps.isEmpty()) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         mapRepository.removeMap(downloadedMaps.first())
-        while (actualMaps.first().downloaded == true) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         job.cancel()
 
         assertEquals(expectedMaps, actualMaps)
@@ -249,7 +284,16 @@ class MapsforgeMapRepositoryTests {
     fun `removes map from list when it is removed and is obsolete`() = runTest {
         availableMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(NewMapSource(Region.EUROPE, "france.map", 0, oldLastModified))
-        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified, downloaded = true, obsolete = true))
+        downloadedMaps.add(
+            NewMapSource(
+                Region.EUROPE,
+                "spain.map",
+                0,
+                oldLastModified,
+                downloaded = true,
+                obsolete = true
+            )
+        )
         val expectedMaps = availableMaps
         val mapRepository = MapsforgeMapRepository(
             mapsDir = mapsDir,
@@ -261,15 +305,30 @@ class MapsforgeMapRepositoryTests {
         val job = launch {
             mapRepository.getMaps().collect { actualMaps = (it) }
         }
-        while(actualMaps.isEmpty()) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         mapRepository.removeMap(downloadedMaps.first())
-        while (actualMaps.size != 2) {
-            advanceUntilIdle()
-        }
+        advanceUntilIdle()
         job.cancel()
 
         assertEquals(expectedMaps, actualMaps)
+    }
+
+    @Test
+    fun `gets downloaded map sources`() = runTest {
+        downloadedMaps.add(NewMapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
+        downloadedMaps.add(NewMapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
+        val expectedMapSources = listOf(
+            mapsDir.resolve(Region.EUROPE.path).resolve("spain.map").pathString,
+            mapsDir.resolve(Region.EUROPE.path).resolve("portugal.map").pathString,
+        )
+        val mapRepository = MapsforgeMapRepository(
+            mapsDir = mapsDir,
+            remoteMapDatasource = remoteMapDatasource,
+            localMapDatasource = localMapDatasource,
+        )
+
+        val actualMapSources = mapRepository.getMapSources()
+
+        assertEquals(expectedMapSources, actualMapSources)
     }
 }

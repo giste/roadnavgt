@@ -28,7 +28,7 @@ import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
 import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
-import org.giste.navigator.utils.DownloadState
+import org.giste.navigator.util.DownloadState
 import java.io.BufferedInputStream
 import java.net.URI
 import java.nio.file.Path
