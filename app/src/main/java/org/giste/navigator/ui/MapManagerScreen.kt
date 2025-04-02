@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,6 +27,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,11 +39,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -146,16 +151,10 @@ fun MapManagerContent(
                 // Available maps
                 availableMaps.forEach {
                     item {
-                        SettingGroup(getRegionName(it.key))
-                    }
-                    items(
-                        items = it.value,
-                        key = { it.id }
-                    ) {
-                        MapRow(
-                            name = it.fileName.removeSuffix(".map"),
-                            onDownload = { uiAction(OnDownload(it)) },
-                            onDelete = {},
+                        RegionGroup(
+                            name = getRegionName(it.key),
+                            mapSources = it.value,
+                            uiAction = uiAction,
                         )
                     }
                 }
@@ -167,6 +166,57 @@ fun MapManagerContent(
         }
 
     }
+}
+
+@Composable
+fun RegionGroup(
+    name: String,
+    mapSources: List<NewMapSource>,
+    uiAction: (MapManagerViewModel.UiAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                start = NavigatorTheme.dimensions.marginPadding,
+                end = NavigatorTheme.dimensions.marginPadding,
+                top = NavigatorTheme.dimensions.marginPadding.times(4),
+                bottom = NavigatorTheme.dimensions.marginPadding
+            ),
+    ) {
+        Row {
+            Text(
+                text = name,
+                modifier = Modifier
+                    .padding(start = NavigatorTheme.dimensions.marginPadding)
+                    .weight(1f),
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+            )
+            CommandBarButton(
+                onClick = { expanded = !expanded },
+                icon = if (expanded)
+                    Icons.Default.KeyboardArrowUp
+                else
+                    Icons.Default.KeyboardArrowDown
+            )
+        }
+
+        HorizontalDivider()
+
+        if (expanded) {
+            mapSources.forEach {
+                MapRow(
+                    name = it.fileName.removeSuffix(".map"),
+                    onDownload = { uiAction(OnDownload(it)) },
+                    onDelete = {},
+                )
+            }
+        }
+    }
+
 }
 
 @Composable
