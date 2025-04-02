@@ -36,6 +36,10 @@
     <string name="settings_minimum_distance_label">Location Minimum Distance</string>
     <string name="settings_minimum_distance_description">Minimum distance between GPS locations in meters</string>
 
+    <!-- Map Manager -->
+    <string name="map_manager_screen_title">Maps</string>
+    <string name="map_manager_downloaded_label">Downloaded</string>
+
     <!-- Map regions -->
     <string name="map_region_africa">Africa</string>
     <string name="map_region_asia">Asia</string>

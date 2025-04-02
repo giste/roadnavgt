@@ -66,6 +66,7 @@ fun NavigatorLandscapePreview() {
                 onRoadbookScrollFinish = { _, _ -> },
                 onEvent = {},
                 navigateToSettings = {},
+                navigateToMapManager = {},
             )
         }
     }
@@ -82,6 +83,7 @@ fun NavigatorLandscapeScreen(
     onRoadbookScrollFinish: (Int, Int) -> Unit,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
+    navigateToMapManager: () -> Unit,
     modifier: Modifier = Modifier,
     decimalFormatSymbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance(),
 ) {
@@ -137,6 +139,7 @@ fun NavigatorLandscapeScreen(
         CommandBar(
             onEvent = onEvent,
             navigateToSettings = navigateToSettings,
+            navigateToMapManager = navigateToMapManager,
         )
     }
 

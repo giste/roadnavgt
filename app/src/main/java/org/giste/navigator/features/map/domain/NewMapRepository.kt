@@ -13,27 +13,14 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.giste.navigator.util
+package org.giste.navigator.features.map.domain
 
-import android.util.Log
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.Flow
+import org.giste.navigator.util.DownloadState
 
-private const val TAG = "SuspendLazy"
-
-class SuspendLazy<T: Any>(private val initializer: suspend () -> T) {
-    @Volatile
-    private lateinit var value: T
-    private val mutex = Mutex()
-
-    suspend operator fun invoke(): T {
-        return mutex.withLock {
-            if (!this::value.isInitialized) {
-                //Log.d(TAG, "Initializing...")
-                value = initializer()
-                //Log.d(TAG, "Initialized $value")
-            }
-            value
-        }
-    }
+interface NewMapRepository {
+    fun getMaps(): Flow<List<NewMapSource>>
+    suspend fun getMapSources(): List<String>
+    fun downloadMap(newMapSource: NewMapSource): Flow<DownloadState>
+    suspend fun removeMap(mapSource: NewMapSource)
 }

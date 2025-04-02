@@ -36,14 +36,10 @@ private const val TAG = "LocalMapDatasource"
 class LocalMapDatasource @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
-    companion object {
-        const val BASE_PATH = "maps/"
-    }
-
-    suspend fun getDownloadedMaps(baseDir: Path, region: Region): List<NewMapSource> {
+    suspend fun getDownloadedMaps(mapsDir: Path, region: Region): List<NewMapSource> {
         val newMapSources = mutableListOf<NewMapSource>()
 
-        val regionDir = baseDir.resolve(BASE_PATH).resolve(region.path)
+        val regionDir = mapsDir.resolve(region.path)
 
         withContext(dispatcher) {
             if (regionDir.exists() && regionDir.isDirectory()) {

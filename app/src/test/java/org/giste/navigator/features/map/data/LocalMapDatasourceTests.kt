@@ -16,7 +16,6 @@
 package org.giste.navigator.features.map.data
 
 import kotlinx.coroutines.test.runTest
-import org.giste.navigator.features.map.data.LocalMapDatasource.Companion.BASE_PATH
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
 import org.giste.navigator.features.map.domain.NewMapSource
 import org.giste.navigator.features.map.domain.Region
@@ -39,7 +38,6 @@ class LocalMapDatasourceTests {
     fun `must find all maps in the directory`(@TempDir tempDir: Path) = runTest {
         val mapDatasource = LocalMapDatasource()
         val regionDir = tempDir
-            .resolve(BASE_PATH)
             .resolve(Region.EUROPE.path)
             .createDirectories()
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)

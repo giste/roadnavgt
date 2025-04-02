@@ -47,15 +47,22 @@ fun Navigator() {
                 NavigatorScreen(
                     viewModel = hiltViewModel<NavigatorViewModel>(),
                     navigateToSettings = {
-                        navController.navigate(
-                            route = Destinations.Settings,
-                        )
+                        navController.navigate(route = Destinations.Settings)
                     },
+                    navigateToMapManager = {
+                        navController.navigate(route = Destinations.MapManager)
+                    }
                 )
             }
             composable<Destinations.Settings> {
                 SettingsScreen(
                     settingsViewModel = hiltViewModel<SettingsViewModel>(),
+                    navigateBack = { navController.popBackStack() }
+                )
+            }
+            composable<Destinations.MapManager> {
+                MapManagerScreen(
+                    mapManagerViewModel = hiltViewModel<MapManagerViewModel>(),
                     navigateBack = { navController.popBackStack() }
                 )
             }
@@ -68,4 +75,6 @@ sealed class Destinations {
     data object Navigator : Destinations()
     @Serializable
     data object Settings : Destinations()
+    @Serializable
+    data object MapManager : Destinations()
 }
