@@ -23,8 +23,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.giste.navigator.features.map.domain.NewMapRepository
-import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.MapRepository
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDelete
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDownload
 import javax.inject.Inject
@@ -33,9 +33,9 @@ private const val TAG = "MapManagerViewModel"
 
 @HiltViewModel
 class MapManagerViewModel @Inject constructor(
-    private val mapRepository: NewMapRepository,
+    private val mapRepository: MapRepository,
 ) : ViewModel() {
-    val mapsState: StateFlow<List<NewMapSource>> = mapRepository.getMaps()
+    val mapsState: StateFlow<List<MapSource>> = mapRepository.getMaps()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -49,16 +49,16 @@ class MapManagerViewModel @Inject constructor(
         }
     }
 
-    private fun download(map: NewMapSource) {
+    private fun download(map: MapSource) {
         viewModelScope.launch { mapRepository.downloadMap(map).collect { Log.d(TAG, it.toString()) } }
     }
 
-    private fun delete(map: NewMapSource) {
+    private fun delete(map: MapSource) {
         viewModelScope.launch { mapRepository.removeMap(map) }
     }
 
     sealed class UiAction {
-        data class OnDownload(val map: NewMapSource) : UiAction()
-        data class OnDelete(val map: NewMapSource) : UiAction()
+        data class OnDownload(val map: MapSource) : UiAction()
+        data class OnDelete(val map: MapSource) : UiAction()
     }
 }

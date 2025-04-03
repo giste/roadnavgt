@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
-import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.Region
 import org.giste.navigator.util.DownloadState
 import org.giste.navigator.util.DownloadState.Downloading
@@ -59,24 +59,24 @@ class RemoteMapDatasourceTests {
     @Test
     fun `must download existing map`(@TempDir temporaryDir: Path) = runTest {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
-        val newMapSourceToDownload = NewMapSource(
+        val mapSourceToDownload = MapSource(
             region = Region.AUSTRALIA_OCEANIA,
             fileName = "ile-de-clipperton.map",
             size = 432 * 1024L,
             lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
                 .toInstant(ZoneOffset.ofHours(0)),
         )
-        val tempFile = temporaryDir.resolve(newMapSourceToDownload.fileName)
+        val tempFile = temporaryDir.resolve(mapSourceToDownload.fileName)
 
         val downloadStates = mutableListOf<DownloadState>()
 
         val job = launch {
-            remoteMapDatasource.downloadMap(newMapSourceToDownload, tempFile).toList(downloadStates)
+            remoteMapDatasource.downloadMap(mapSourceToDownload, tempFile).toList(downloadStates)
         }
         job.join()
 
         assertTrue(downloadStates.first() is Downloading)
         assertTrue(downloadStates.last() is Finished)
-        assertEquals(newMapSourceToDownload.lastModified, tempFile.getLastModifiedTime().toInstant())
+        assertEquals(mapSourceToDownload.lastModified, tempFile.getLastModifiedTime().toInstant())
     }
 }

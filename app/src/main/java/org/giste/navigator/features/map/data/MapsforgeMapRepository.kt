@@ -23,8 +23,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
-import org.giste.navigator.features.map.domain.NewMapRepository
-import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.MapRepository
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.Region
 import org.giste.navigator.util.DownloadState
 import org.giste.navigator.util.SuspendLazy
@@ -45,23 +45,23 @@ class MapsforgeMapRepository @Inject constructor(
     private val mapsDir: Path,
     private val remoteMapDatasource: RemoteMapDatasource,
     private val localMapDatasource: LocalMapDatasource,
-) : NewMapRepository {
+) : MapRepository {
     private val availableMaps = SuspendLazy { getAvailableMaps() }
     private val downloadedMaps = SuspendLazy { getDownloadedMaps() }
-    private val _maps = MutableSharedFlow<List<NewMapSource>>()
+    private val _maps = MutableSharedFlow<List<MapSource>>()
     private val maps = _maps.onSubscription { emit(getMapList()) }
     private val _sources = MutableSharedFlow<List<String>>()
     private val sources = _sources.onSubscription { emit(getSourceList()) }
 
-    override fun getMaps(): Flow<List<NewMapSource>> {
+    override fun getMaps(): Flow<List<MapSource>> {
         return maps
     }
 
-    override suspend fun getMapSources(): Flow<List<String>> {
+    override fun getMapSources(): Flow<List<String>> {
         return sources
     }
 
-    override fun downloadMap(mapSource: NewMapSource): Flow<DownloadState> {
+    override fun downloadMap(mapSource: MapSource): Flow<DownloadState> {
         try {
             val tempFile = mapsDir.resolve("temp.map")
             val regionDir = mapsDir.resolve(mapSource.region.path)
@@ -107,7 +107,7 @@ class MapsforgeMapRepository @Inject constructor(
         }
     }
 
-    override suspend fun removeMap(mapSource: NewMapSource) {
+    override suspend fun removeMap(mapSource: MapSource) {
         try {
             val mapFile = mapsDir.resolve(mapSource.region.path)
                 .resolve(mapSource.fileName)
@@ -126,14 +126,14 @@ class MapsforgeMapRepository @Inject constructor(
         _sources.emit(getSourceList())
     }
 
-    private suspend fun getMapList(): List<NewMapSource> {
-        val newMapSources = mutableListOf<NewMapSource>()
+    private suspend fun getMapList(): List<MapSource> {
+        val mapSources = mutableListOf<MapSource>()
 
         downloadedMaps().values.forEach { downloaded ->
             availableMaps()[downloaded.id]?.let { available ->
                 // Available map for downloaded one
                 Log.d(TAG, "Marking map as downloaded $available")
-                newMapSources.add(
+                mapSources.add(
                     available.copy
                         (
                         downloaded = true,
@@ -143,20 +143,20 @@ class MapsforgeMapRepository @Inject constructor(
             } ?: run {
                 Log.d(TAG, "Marking map as obsolete $downloaded")
                 // No available map for downloaded one
-                newMapSources.add(downloaded.copy(obsolete = true))
+                mapSources.add(downloaded.copy(obsolete = true))
             }
         }
         // Add remaining available maps
-        newMapSources.addAll(
+        mapSources.addAll(
             availableMaps().filter { !downloadedMaps().keys.contains(it.key) }
                 .map { it.value }
         )
 
-        return newMapSources
+        return mapSources
     }
 
-    private suspend fun getDownloadedMaps(): MutableMap<String, NewMapSource> {
-        val downloaded = mutableMapOf<String, NewMapSource>()
+    private suspend fun getDownloadedMaps(): MutableMap<String, MapSource> {
+        val downloaded = mutableMapOf<String, MapSource>()
         coroutineScope {
             Region.entries.forEach {
                 launch {
@@ -174,8 +174,8 @@ class MapsforgeMapRepository @Inject constructor(
         return downloaded
     }
 
-    private suspend fun getAvailableMaps(): Map<String, NewMapSource> {
-        val availableMaps = mutableMapOf<String, NewMapSource>()
+    private suspend fun getAvailableMaps(): Map<String, MapSource> {
+        val availableMaps = mutableMapOf<String, MapSource>()
 
         //coroutineScope {
         Region.entries.forEach {

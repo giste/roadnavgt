@@ -17,7 +17,7 @@ package org.giste.navigator.features.map.data
 
 import kotlinx.coroutines.test.runTest
 import org.giste.navigator.features.map.data.RemoteMapDatasource.Companion.DATE_TIME_FORMAT
-import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.Region
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -43,11 +43,11 @@ class LocalMapDatasourceTests {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)
         val lastModified = LocalDateTime.parse("1970-01-01 00:00", formatter)
             .toInstant(ZoneOffset.ofHours(0))
-        val expectedNewMapSources = listOf(
-            NewMapSource(Region.EUROPE, "spain.map", 0L, lastModified, true),
-            NewMapSource(Region.EUROPE, "portugal.map", 0L, lastModified, true),
+        val expectedMapSources = listOf(
+            MapSource(Region.EUROPE, "spain.map", 0L, lastModified, true),
+            MapSource(Region.EUROPE, "portugal.map", 0L, lastModified, true),
         )
-        expectedNewMapSources.forEach {
+        expectedMapSources.forEach {
             regionDir.resolve(it.fileName)
                 .createFile()
                 .setLastModifiedTime(FileTime.from(lastModified))
@@ -55,6 +55,6 @@ class LocalMapDatasourceTests {
 
         val actualMaps = mapDatasource.getDownloadedMaps(tempDir, Region.EUROPE)
 
-        assertEquals(expectedNewMapSources, actualMaps)
+        assertEquals(expectedMapSources, actualMaps)
     }
 }

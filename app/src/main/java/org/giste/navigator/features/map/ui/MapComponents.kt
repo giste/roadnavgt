@@ -25,11 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.MapSource
 
 @Composable
 fun MapViewer(
-    mapSource: List<MapSource>,
+    mapSource: List<String>,
     location: Location?,
     zoomLevel: Int,
     modifier: Modifier = Modifier,

@@ -37,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import org.giste.navigator.R
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.ui.MapViewer
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.roadbook.ui.Roadbook
@@ -75,7 +74,7 @@ fun NavigatorLandscapePreview() {
 @Composable
 fun NavigatorLandscapeScreen(
     locationState: Location?,
-    mapSourceState: List<MapSource>,
+    mapSourceState: List<String>,
     roadbookState: Roadbook,
     settings: Settings,
     trip: Trip,

@@ -50,7 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.giste.navigator.R
-import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.Region
 import org.giste.navigator.features.settings.ui.SettingGroup
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDelete
@@ -79,10 +79,10 @@ fun MapManagerPreview() {
     NavigatorTheme {
         MapManagerContent(
             mapSources = listOf(
-                NewMapSource(Region.EUROPE, "spain.map", 0, lastModified, true),
-                NewMapSource(Region.EUROPE, "portugal.map", 0, lastModified, true, true),
-                NewMapSource(Region.EUROPE, "france.map", 0, lastModified, true, false, true),
-                NewMapSource(Region.EUROPE, "italy.map", 0, lastModified),
+                MapSource(Region.EUROPE, "spain.map", 0, lastModified, true),
+                MapSource(Region.EUROPE, "portugal.map", 0, lastModified, true, true),
+                MapSource(Region.EUROPE, "france.map", 0, lastModified, true, false, true),
+                MapSource(Region.EUROPE, "italy.map", 0, lastModified),
             ),
             uiAction = {},
             navigateBack = {},
@@ -104,12 +104,12 @@ fun MapManagerScreen(
 
 @Composable
 fun MapManagerContent(
-    mapSources: List<NewMapSource>,
+    mapSources: List<MapSource>,
     uiAction: (MapManagerViewModel.UiAction) -> Unit,
     navigateBack: () -> Unit,
 ) {
     val availableMaps by rememberSaveable(mapSources) {
-        val maps = mutableMapOf<Region, List<NewMapSource>>()
+        val maps = mutableMapOf<Region, List<MapSource>>()
         Region.entries.forEach { region ->
             maps.put(
                 key = region,
@@ -171,7 +171,7 @@ fun MapManagerContent(
 @Composable
 fun RegionGroup(
     name: String,
-    mapSources: List<NewMapSource>,
+    mapSources: List<MapSource>,
     uiAction: (MapManagerViewModel.UiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {

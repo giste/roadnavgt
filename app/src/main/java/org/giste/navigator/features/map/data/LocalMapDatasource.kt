@@ -20,7 +20,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.giste.navigator.IoDispatcher
-import org.giste.navigator.features.map.domain.NewMapSource
+import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.map.domain.Region
 import java.nio.file.Path
 import javax.inject.Inject
@@ -36,8 +36,8 @@ private const val TAG = "LocalMapDatasource"
 class LocalMapDatasource @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
-    suspend fun getDownloadedMaps(mapsDir: Path, region: Region): List<NewMapSource> {
-        val newMapSources = mutableListOf<NewMapSource>()
+    suspend fun getDownloadedMaps(mapsDir: Path, region: Region): List<MapSource> {
+        val mapSources = mutableListOf<MapSource>()
 
         val regionDir = mapsDir.resolve(region.path)
 
@@ -45,7 +45,7 @@ class LocalMapDatasource @Inject constructor(
             if (regionDir.exists() && regionDir.isDirectory()) {
                 regionDir.listDirectoryEntries("*.map")
                     .map { foundMap ->
-                        NewMapSource(
+                        MapSource(
                             region = region,
                             fileName = foundMap.name,
                             size = foundMap.fileSize(),
@@ -55,11 +55,11 @@ class LocalMapDatasource @Inject constructor(
                     }
                     .forEach {
                         Log.d(TAG, "Found map: $it")
-                        newMapSources.add(it)
+                        mapSources.add(it)
                     }
             }
         }
 
-        return newMapSources
+        return mapSources
     }
 }

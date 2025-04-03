@@ -15,6 +15,12 @@
 
 package org.giste.navigator.features.map.domain
 
+import kotlinx.coroutines.flow.Flow
+import org.giste.navigator.util.DownloadState
+
 interface MapRepository {
-    suspend fun getMaps(): List<MapSource>
+    fun getMaps(): Flow<List<MapSource>>
+    fun getMapSources(): Flow<List<String>>
+    fun downloadMap(mapSource: MapSource): Flow<DownloadState>
+    suspend fun removeMap(mapSource: MapSource)
 }

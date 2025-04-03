@@ -27,7 +27,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.trip.domain.Trip
@@ -80,7 +79,7 @@ fun NavigatorScreen(
 @Composable
 fun NavigatorContent(
     location: Location?,
-    mapSource: List<MapSource>,
+    mapSource: List<String>,
     roadbook: Roadbook,
     settings: Settings,
     trip: Trip,
