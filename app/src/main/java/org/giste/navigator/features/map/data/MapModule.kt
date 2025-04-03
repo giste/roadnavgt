@@ -8,7 +8,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.giste.navigator.features.map.domain.MapRepository
 import org.giste.navigator.features.map.domain.NewMapRepository
-import java.nio.file.Paths
 import javax.inject.Singleton
 import kotlin.io.path.Path
 

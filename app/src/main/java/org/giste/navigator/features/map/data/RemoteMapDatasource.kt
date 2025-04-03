@@ -131,7 +131,7 @@ class RemoteMapDatasource @Inject constructor(
                                 bytesProcessed += byteCount
                                 emit(
                                     DownloadState.Downloading(
-                                        (bytesProcessed / totalBytes * 100).toInt()
+                                        (bytesProcessed / totalBytes * 100).toInt().coerceIn(0, 100)
                                     )
                                 )
                             }

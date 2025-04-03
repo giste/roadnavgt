@@ -20,7 +20,7 @@ import org.giste.navigator.util.DownloadState
 
 interface NewMapRepository {
     fun getMaps(): Flow<List<NewMapSource>>
-    suspend fun getMapSources(): List<String>
+    suspend fun getMapSources(): Flow<List<String>>
     fun downloadMap(newMapSource: NewMapSource): Flow<DownloadState>
     suspend fun removeMap(mapSource: NewMapSource)
 }

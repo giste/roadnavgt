@@ -18,11 +18,10 @@ package org.giste.navigator.features.map.data
 import android.util.Log
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.map.domain.NewMapRepository
 import org.giste.navigator.features.map.domain.NewMapSource
@@ -47,54 +46,87 @@ class MapsforgeMapRepository @Inject constructor(
     private val remoteMapDatasource: RemoteMapDatasource,
     private val localMapDatasource: LocalMapDatasource,
 ) : NewMapRepository {
-    private val _maps = MutableStateFlow<List<NewMapSource>>(emptyList())
-    private val maps = _maps.asStateFlow()
-    private val availableMaps = SuspendLazy {
-        val tempMaps = mutableMapOf<String, NewMapSource>()
-        coroutineScope {
-            Region.entries.forEach {
-                launch {
-                    tempMaps.putAll(
-                        remoteMapDatasource.getAvailableMaps(it)
-                            .associate { it.id to it }
-                    )
-                }
-            }
-        }
-        Log.d(TAG, "Loaded initial available maps: ${tempMaps.size}")
-        Log.v(TAG, "Initial available: $tempMaps")
-        tempMaps.toMap()
-    }
-    private val downloadedMaps = SuspendLazy {
-        val tempMaps = mutableMapOf<String, NewMapSource>()
-        coroutineScope {
-            Region.entries.forEach {
-                launch {
-                    tempMaps.putAll(
-                        localMapDatasource.getDownloadedMaps(mapsDir, it)
-                            .associate { it.id to it }
-                    )
-                }
-            }
-        }
-        Log.d(TAG, "Loaded initial downloaded maps: ${tempMaps.size}")
-        Log.v(TAG, "Initial downloaded: $tempMaps")
-        tempMaps
-    }
+    private val availableMaps = SuspendLazy { getAvailableMaps() }
+    private val downloadedMaps = SuspendLazy { getDownloadedMaps() }
+    private val _maps = MutableSharedFlow<List<NewMapSource>>()
+    private val maps = _maps.onSubscription { emit(getMapList()) }
+    private val _sources = MutableSharedFlow<List<String>>()
+    private val sources = _sources.onSubscription { emit(getSourceList()) }
 
     override fun getMaps(): Flow<List<NewMapSource>> {
-        return maps.onSubscription {
-            getInitialMaps()
+        return maps
+    }
+
+    override suspend fun getMapSources(): Flow<List<String>> {
+        return sources
+    }
+
+    override fun downloadMap(mapSource: NewMapSource): Flow<DownloadState> {
+        try {
+            val tempFile = mapsDir.resolve("temp.map")
+            val regionDir = mapsDir.resolve(mapSource.region.path)
+            val destination = regionDir.resolve(mapSource.fileName)
+
+            regionDir.createDirectories()
+
+            return remoteMapDatasource.downloadMap(mapSource, tempFile)
+                .map { downloadState ->
+                    when (downloadState) {
+                        is DownloadState.Downloading -> downloadState
+
+                        is DownloadState.Failed -> {
+                            tempFile.deleteIfExists()
+                            downloadState
+                        }
+
+                        is DownloadState.Finished -> {
+                            // Move temporal file to destination
+                            tempFile.inputStream().use {
+                                destination.outputStream().use {
+                                    tempFile.moveTo(destination, overwrite = true)
+                                    destination.setLastModifiedTime(
+                                        FileTime.from(mapSource.lastModified)
+                                    )
+                                    Log.d(TAG, "Moving temp file to ${destination.pathString}")
+                                }
+                            }
+                            availableMaps()[mapSource.id]?.let {
+                                downloadedMaps()[mapSource.id] = it.copy(downloaded = true)
+                            } ?: run {
+                                throw Exception("Downloaded map should be available")
+                            }
+                            updateFlows()
+
+                            downloadState
+                        }
+                    }
+                }
+        } catch (e: Exception) {
+            Log.e(TAG, e.stackTraceToString())
+            return flowOf(DownloadState.Failed(e))
         }
     }
 
-    override suspend fun getMapSources(): List<String> {
-        return downloadedMaps().values.map {
-            mapsDir.resolve(it.region.path).resolve(it.fileName).pathString
+    override suspend fun removeMap(mapSource: NewMapSource) {
+        try {
+            val mapFile = mapsDir.resolve(mapSource.region.path)
+                .resolve(mapSource.fileName)
+
+            mapFile.deleteIfExists()
+            downloadedMaps().remove(mapSource.id)
+            updateFlows()
+        } catch (e: Exception) {
+            // Log exception and continue
+            Log.e(TAG, e.toString())
         }
     }
 
-    private suspend fun getInitialMaps() {
+    private suspend fun updateFlows() {
+        _maps.emit(getMapList())
+        _sources.emit(getSourceList())
+    }
+
+    private suspend fun getMapList(): List<NewMapSource> {
         val newMapSources = mutableListOf<NewMapSource>()
 
         downloadedMaps().values.forEach { downloaded ->
@@ -102,7 +134,8 @@ class MapsforgeMapRepository @Inject constructor(
                 // Available map for downloaded one
                 Log.d(TAG, "Marking map as downloaded $available")
                 newMapSources.add(
-                    available.copy(
+                    available.copy
+                        (
                         downloaded = true,
                         updatable = available.lastModified > downloaded.lastModified
                     )
@@ -115,80 +148,55 @@ class MapsforgeMapRepository @Inject constructor(
         }
         // Add remaining available maps
         newMapSources.addAll(
-            availableMaps().values.filter { !downloadedMaps().keys.contains(it.id) }
+            availableMaps().filter { !downloadedMaps().keys.contains(it.key) }
+                .map { it.value }
         )
 
-        _maps.update {
-            newMapSources.toList()
-        }
+        return newMapSources
     }
 
-    override fun downloadMap(newMapSource: NewMapSource): Flow<DownloadState> {
-        return flow {
-            try {
-                val tempFile = mapsDir.resolve("temp.map")
-                val regionDir = mapsDir.resolve(newMapSource.region.path)
-                val destination = regionDir.resolve(newMapSource.fileName)
-
-                regionDir.createDirectories()
-                remoteMapDatasource.downloadMap(newMapSource, tempFile).collect {
-                    Log.d(TAG, "Download state: $it")
-                    when (it) {
-                        is DownloadState.Downloading -> emit(it)
-                        is DownloadState.Failed -> {
-                            tempFile.deleteIfExists()
-                            emit(it)
-                        }
-
-                        is DownloadState.Finished -> {
-                            tempFile.inputStream().use {
-                                destination.outputStream().use {
-                                    Log.d(TAG, "Moving temp file to ${destination.pathString}")
-                                    tempFile.moveTo(destination, overwrite = true)
-                                    destination.setLastModifiedTime(
-                                        FileTime.from(newMapSource.lastModified)
-                                    )
-                                }
-                            }
-                            val downloadedMap = availableMaps()[newMapSource.id]!!.copy(
-                                downloaded = true,
-                                updatable = false,
-                                obsolete = false,
-                            )
-                            downloadedMaps().put(downloadedMap.id, downloadedMap)
-                            _maps.update {
-                                val newMaps = _maps.value.toMutableList()
-                                newMaps.remove(newMapSource)
-                                newMaps.add(downloadedMap)
-                                newMaps.toList()
-                            }
-                            emit(it)
-                        }
-                    }
+    private suspend fun getDownloadedMaps(): MutableMap<String, NewMapSource> {
+        val downloaded = mutableMapOf<String, NewMapSource>()
+        coroutineScope {
+            Region.entries.forEach {
+                launch {
+                    downloaded.putAll(
+                        localMapDatasource.getDownloadedMaps(mapsDir, it)
+                            .associate { it.id to it }
+                    )
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, e.stackTraceToString())
-                emit(DownloadState.Failed(e))
             }
         }
+
+        Log.d(TAG, "Loaded initial downloaded maps: ${downloaded.size}")
+        Log.v(TAG, "Initial downloaded: $downloaded")
+
+        return downloaded
     }
 
-    override suspend fun removeMap(mapSource: NewMapSource) {
-        val mapFile = mapsDir.resolve(mapSource.region.path)
-            .resolve(mapSource.fileName)
+    private suspend fun getAvailableMaps(): Map<String, NewMapSource> {
+        val availableMaps = mutableMapOf<String, NewMapSource>()
 
-        try {
-            mapFile.deleteIfExists()
+        //coroutineScope {
+        Region.entries.forEach {
+            //launch {
+            availableMaps.putAll(
+                remoteMapDatasource.getAvailableMaps(it)
+                    .associate { it.id to it }
+            )
+            //}
+        }
+        //}
 
-            val maps = _maps.value.toMutableList()
-            maps.remove(mapSource)
-            availableMaps()[mapSource.id]?.let { maps.add(it.copy()) }
-            _maps.update {
-                maps.toList()
-            }
-        } catch (e: Exception) {
-            // Log exception and continue
-            Log.e(TAG, e.toString())
+        Log.d(TAG, "Loaded initial available maps: ${availableMaps.size}")
+        Log.v(TAG, "Initial available: $availableMaps")
+
+        return availableMaps.toMap()
+    }
+
+    private suspend fun getSourceList(): List<String> {
+        return downloadedMaps().values.map {
+            mapsDir.resolve(it.region.path).resolve(it.fileName).pathString
         }
     }
 }
