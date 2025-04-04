@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.trip.domain.Trip
@@ -54,7 +53,7 @@ class NavigatorScreenTripInstrumentedTests {
     private val viewModel = mockk<NavigatorViewModel>()
 
     private val locationFlow = MutableStateFlow<Location?>(null)
-    private val mapFlow = MutableStateFlow<List<MapSource>>(emptyList())
+    private val mapFlow = MutableStateFlow<List<String>>(emptyList())
     private val roadbookFlow = MutableStateFlow<Roadbook>(Roadbook.NotLoaded)
     private val settingsFlow = MutableStateFlow(Settings())
     private val tripFlow = MutableStateFlow(Trip())
@@ -86,7 +85,13 @@ class NavigatorScreenTripInstrumentedTests {
     @Test
     fun shows_correct_trip_values() {
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {},
+                )
+            }
 
             tripFlow.update { Trip(123450, 9876540) }
             waitForIdle()
@@ -99,7 +104,13 @@ class NavigatorScreenTripInstrumentedTests {
     @Test
     fun increments_partial_when_increase_button_is_pressed() {
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             onNodeWithTag(INCREASE_PARTIAL).performClick()
 
@@ -113,7 +124,13 @@ class NavigatorScreenTripInstrumentedTests {
     @Test
     fun increments_partial_when_right_key_is_pressed() {
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             onNodeWithTag(NAVIGATION_CONTENT).performKeyInput {
                 pressKey(Key.DirectionRight)
@@ -130,7 +147,13 @@ class NavigatorScreenTripInstrumentedTests {
         tripFlow.update { Trip(100, 100) }
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             onNodeWithTag(DECREASE_PARTIAL).performClick()
 
@@ -146,7 +169,13 @@ class NavigatorScreenTripInstrumentedTests {
         tripFlow.update { Trip(100, 100) }
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             onNodeWithTag(DECREASE_PARTIAL).performKeyInput {
                 pressKey(Key.DirectionLeft)
@@ -163,7 +192,13 @@ class NavigatorScreenTripInstrumentedTests {
         tripFlow.update { Trip(100, 100) }
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             onNodeWithTag(RESET_PARTIAL).performClick()
 
@@ -198,7 +233,13 @@ class NavigatorScreenTripInstrumentedTests {
         tripFlow.update { Trip(100, 100) }
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             onNodeWithTag(RESET_TRIP).performClick()
 

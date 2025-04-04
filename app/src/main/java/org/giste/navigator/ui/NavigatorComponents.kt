@@ -57,6 +57,7 @@ fun CommandBarPreview() {
         CommandBar(
             onEvent = {},
             navigateToSettings = {},
+            navigateToMapManager = {}
         )
     }
 }
@@ -65,6 +66,7 @@ fun CommandBarPreview() {
 fun CommandBar(
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
+    navigateToMapManager: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val selectRoadbookLauncher = rememberLauncherForActivityResult(
@@ -114,7 +116,7 @@ fun CommandBar(
             modifier = Modifier.weight(1f)
         )
         CommandBarButton(
-            onClick = {},
+            onClick = { navigateToMapManager() },
             icon = ImageVector.vectorResource(R.drawable.map),
             modifier = Modifier.weight(1f)
         )

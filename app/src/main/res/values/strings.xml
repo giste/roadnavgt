@@ -36,4 +36,28 @@
     <string name="settings_minimum_distance_label">Location Minimum Distance</string>
     <string name="settings_minimum_distance_description">Minimum distance between GPS locations in meters</string>
 
+    <!-- Map Manager -->
+    <string name="map_manager_screen_title">Maps</string>
+    <string name="map_manager_downloaded_label">Downloaded</string>
+
+    <!-- Map regions -->
+    <string name="map_region_africa">Africa</string>
+    <string name="map_region_asia">Asia</string>
+    <string name="map_region_china">China</string>
+    <string name="map_region_australia_oceania">Australia - Oceania</string>
+    <string name="map_region_central_america">Central America</string>
+    <string name="map_region_europe">Europe</string>
+    <string name="map_region_north_america">North America</string>
+    <string name="map_region_canada">Canada</string>
+    <string name="map_region_russia">Russia</string>
+    <string name="map_region_south_america">South America</string>
+
+    <!-- North America maps -->
+    <string name="map_north_america_greenland">Greenland</string>
+    <string name="map_north_america_mexico">Mexico</string>
+    <string name="map_north_america_us_midwest">US Midwest</string>
+    <string name="map_north_america_us_northeast">US Northeast</string>
+    <string name="map_north_america_us_south">US South</string>
+    <string name="map_north_america_us_west">US West</string>
+
 </resources>

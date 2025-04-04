@@ -13,19 +13,10 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.giste.navigator.features.map.domain
+package org.giste.navigator.util
 
-import java.time.Instant
-
-data class MapSource(
-    val region: Region,
-    val fileName: String,
-    val size: Long,
-    val lastModified: Instant,
-    val downloaded: Boolean = false,
-    val updatable: Boolean = false,
-    val obsolete: Boolean = false,
-) {
-    val id: String
-        get() = "${region.path}$fileName"
+sealed class DownloadState {
+    data class Downloading(val percentage: Int): DownloadState()
+    object Finished: DownloadState()
+    data class Failed(val e: Exception): DownloadState()
 }

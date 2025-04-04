@@ -13,19 +13,27 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.giste.navigator.features.map.domain
+package org.giste.navigator.util
 
-import java.time.Instant
+import android.util.Log
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
-data class MapSource(
-    val region: Region,
-    val fileName: String,
-    val size: Long,
-    val lastModified: Instant,
-    val downloaded: Boolean = false,
-    val updatable: Boolean = false,
-    val obsolete: Boolean = false,
-) {
-    val id: String
-        get() = "${region.path}$fileName"
+private const val TAG = "SuspendLazy"
+
+class SuspendLazy<T: Any>(private val initializer: suspend () -> T) {
+    @Volatile
+    private lateinit var value: T
+    private val mutex = Mutex()
+
+    suspend operator fun invoke(): T {
+        return mutex.withLock {
+            if (!this::value.isInitialized) {
+                //Log.d(TAG, "Initializing...")
+                value = initializer()
+                //Log.d(TAG, "Initialized $value")
+            }
+            value
+        }
+    }
 }

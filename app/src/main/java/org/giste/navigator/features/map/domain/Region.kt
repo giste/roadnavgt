@@ -15,17 +15,15 @@
 
 package org.giste.navigator.features.map.domain
 
-import java.time.Instant
-
-data class MapSource(
-    val region: Region,
-    val fileName: String,
-    val size: Long,
-    val lastModified: Instant,
-    val downloaded: Boolean = false,
-    val updatable: Boolean = false,
-    val obsolete: Boolean = false,
-) {
-    val id: String
-        get() = "${region.path}$fileName"
+enum class Region(val path: String) {
+    AFRICA("africa/"),
+    ASIA("asia/"),
+    CHINA("asia/china/"),
+    AUSTRALIA_OCEANIA("australia-oceania/"),
+    CENTRAL_AMERICA("central-america/"),
+    EUROPE("europe/"),
+    NORTH_AMERICA("north-america/"),
+    CANADA("north-america/canada/"),
+    RUSSIA("russia/"),
+    SOUTH_AMERICA("south-america/"),
 }

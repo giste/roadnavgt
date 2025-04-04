@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.roadbook.data.RoadbookDatasource
 import org.giste.navigator.features.roadbook.data.RoadbookPagingSource
 import org.giste.navigator.features.roadbook.domain.Roadbook
@@ -58,7 +57,7 @@ class NavigatorScreenRoadbookInstrumentedTests {
     private val viewModel = mockk<NavigatorViewModel>()
 
     private val locationFlow = MutableStateFlow<Location?>(null)
-    private val mapFlow = MutableStateFlow<List<MapSource>>(emptyList())
+    private val mapFlow = MutableStateFlow<List<String>>(emptyList())
     private val roadbookFlow = MutableStateFlow<Roadbook>(Roadbook.NotLoaded)
     private val settingsFlow = MutableStateFlow(Settings())
     private val tripFlow = MutableStateFlow(Trip())
@@ -87,7 +86,13 @@ class NavigatorScreenRoadbookInstrumentedTests {
         }.flow
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             roadbookFlow.update { Roadbook.Loaded(pager, Scroll()) }
             waitForIdle()
@@ -106,7 +111,13 @@ class NavigatorScreenRoadbookInstrumentedTests {
         every { viewModel.onAction(any()) } returns Unit
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             roadbookFlow.update { Roadbook.Loaded(pager, Scroll()) }
             settingsFlow.update { Settings(pixelsToMoveRoadbook = 100) }
@@ -130,7 +141,13 @@ class NavigatorScreenRoadbookInstrumentedTests {
         every { viewModel.onAction(any()) } returns Unit
 
         extension.use {
-            setContent { NavigatorScreen(viewModel = viewModel, navigateToSettings = {}) }
+            setContent {
+                NavigatorScreen(
+                    viewModel = viewModel,
+                    navigateToSettings = {},
+                    navigateToMapManager = {}
+                )
+            }
 
             roadbookFlow.update { Roadbook.Loaded(pager, Scroll(0, 200)) }
             settingsFlow.update { Settings(pixelsToMoveRoadbook = 100) }
@@ -158,7 +175,7 @@ class NavigatorScreenRoadbookInstrumentedTests {
         ): List<RoadbookPage> {
             val pages: MutableList<RoadbookPage> = mutableListOf()
 
-            (startPosition..(startPosition + loadSize - 1)).forEach { key -> 
+            (startPosition..(startPosition + loadSize - 1)).forEach { key ->
                 val page = RoadbookPage(
                     index = key,
                     page = createBitmap(pageSize, pageSize)

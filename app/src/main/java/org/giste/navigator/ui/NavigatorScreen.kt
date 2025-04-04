@@ -27,7 +27,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.location.domain.Location
-import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.features.roadbook.domain.Roadbook
 import org.giste.navigator.features.settings.domain.Settings
 import org.giste.navigator.features.trip.domain.Trip
@@ -50,6 +49,7 @@ fun NavigatorPreview() {
             trip = Trip(),
             onEvent = {},
             navigateToSettings = {},
+            navigateToMapManager = {},
             onRoadbookScrollFinish = { _, _ -> }
         )
     }
@@ -59,6 +59,7 @@ fun NavigatorPreview() {
 fun NavigatorScreen(
     viewModel: NavigatorViewModel = viewModel(),
     navigateToSettings: () -> Unit,
+    navigateToMapManager: () -> Unit,
 ) {
     NavigatorContent(
         location = viewModel.locationState.collectAsStateWithLifecycle().value,
@@ -68,6 +69,7 @@ fun NavigatorScreen(
         trip = viewModel.tripState.collectAsStateWithLifecycle().value,
         onEvent = viewModel::onAction,
         navigateToSettings = navigateToSettings,
+        navigateToMapManager = navigateToMapManager,
         onRoadbookScrollFinish = { index, offset ->
             viewModel.onAction(NavigatorViewModel.UiAction.SaveScroll(index, offset))
         }
@@ -77,12 +79,13 @@ fun NavigatorScreen(
 @Composable
 fun NavigatorContent(
     location: Location?,
-    mapSource: List<MapSource>,
+    mapSource: List<String>,
     roadbook: Roadbook,
     settings: Settings,
     trip: Trip,
     onEvent: (NavigatorViewModel.UiAction) -> Unit,
     navigateToSettings: () -> Unit,
+    navigateToMapManager: () -> Unit,
     onRoadbookScrollFinish: (Int, Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -174,6 +177,7 @@ fun NavigatorContent(
             onRoadbookScrollFinish = onRoadbookScrollFinish,
             onEvent = onEvent,
             navigateToSettings = navigateToSettings,
+            navigateToMapManager = navigateToMapManager,
         )
     }
 }
