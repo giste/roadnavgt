@@ -66,9 +66,10 @@ class MapsforgeMapRepository @Inject constructor(
             val regionDir = mapsDir.resolve(mapSource.region.path)
             val destination = regionDir.resolve(mapSource.fileName)
             val tempFile = regionDir.resolve("${mapSource.fileName.removeSuffix(".map")}.tmp")
+            Log.d(TAG, "Destination: ${destination.pathString}")
+            Log.d(TAG, "Temp: ${tempFile.pathString}")
 
             regionDir.createDirectories()
-            tempFile.deleteIfExists()
 
             return remoteMapDatasource.downloadMap(mapSource, tempFile)
                 .onEach { downloadState ->

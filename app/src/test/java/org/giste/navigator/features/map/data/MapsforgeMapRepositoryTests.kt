@@ -38,6 +38,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
@@ -56,11 +57,9 @@ class MapsforgeMapRepositoryTests {
     private val availableRegionSlot = slot<Region>()
     private val downloadedMaps = mutableListOf<MapSource>()
     private val downloadedRegionSlot = slot<Region>()
-    private lateinit var mapsDir: Path
 
     @BeforeEach
-    fun beforeEach(@TempDir tempDir: Path) {
-        mapsDir = tempDir
+    fun beforeEach() {
         clearAllMocks()
         availableMaps.removeAll { true }
         downloadedMaps.removeAll { true }
@@ -70,7 +69,7 @@ class MapsforgeMapRepositoryTests {
             availableMaps.filter { it.region == availableRegionSlot.captured }
         }
         coEvery {
-            localMapDatasource.getDownloadedMaps(mapsDir, capture(downloadedRegionSlot))
+            localMapDatasource.getDownloadedMaps(any(), capture(downloadedRegionSlot))
         } answers {
             downloadedMaps.filter { it.region == downloadedRegionSlot.captured }
         }
@@ -78,7 +77,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `emits all available maps when there is no downloaded map`() = runTest {
+    fun `emits all available maps when there is no downloaded map`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -100,7 +99,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `mark downloaded map as updatable when available is new`() = runTest {
+    fun `mark downloaded map as updatable when available is new`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "spain.map", 0, newLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -143,7 +142,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `marks map as downloaded when local map exists`() = runTest {
+    fun `marks map as downloaded when local map exists`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -179,7 +178,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `mark map as obsolete when is downloaded and it is not available`() = runTest {
+    fun `mark map as obsolete when is downloaded and it is not available`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
         downloadedMaps.add(
@@ -220,15 +219,17 @@ class MapsforgeMapRepositoryTests {
     }
 
     @Test
-    fun `moves downloaded map to its destination`() = runTest {
+    fun `moves downloaded map to its destination`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
         downloadedMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
-        val tempFile = mapsDir.resolve("temp.map").createFile()
-        assertTrue { tempFile.exists() }
+
         val mapSource = MapSource(Region.EUROPE, "spain.map", 0, oldLastModified)
-        val destination = mapsDir.resolve(mapSource.region.path).resolve(mapSource.fileName)
+        val regionDir = mapsDir.resolve(mapSource.region.path).createDirectories()
+        val tempFile = regionDir.resolve("spain.tmp").createFile()
+        val destination = regionDir.resolve(mapSource.fileName)
+        assertTrue { tempFile.exists() }
         coEvery { remoteMapDatasource.downloadMap(any(), any()) } returns flowOf(Finished)
         val mapRepository = MapsforgeMapRepository(
             mapsDir = mapsDir,
@@ -247,7 +248,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `marks map as available when is removed and available map exists`() = runTest {
+    fun `marks map as available when is removed and available map exists`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -285,7 +286,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `sets map as available when it is removed and is not obsolete`() = runTest {
+    fun `sets map as available when it is removed and is not obsolete`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
@@ -311,7 +312,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `removes map from list when it is removed and is obsolete`() = runTest {
+    fun `removes map from list when it is removed and is obsolete`(@TempDir mapsDir: Path) = runTest {
         availableMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         availableMaps.add(MapSource(Region.EUROPE, "france.map", 0, oldLastModified))
         downloadedMaps.add(
@@ -345,7 +346,7 @@ class MapsforgeMapRepositoryTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `gets downloaded map sources`() = runTest {
+    fun `gets downloaded map sources`(@TempDir mapsDir: Path) = runTest {
         downloadedMaps.add(MapSource(Region.EUROPE, "spain.map", 0, oldLastModified))
         downloadedMaps.add(MapSource(Region.EUROPE, "portugal.map", 0, oldLastModified))
         val expectedMapSources = listOf(
