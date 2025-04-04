@@ -20,7 +20,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.map.domain.MapRepository
@@ -71,14 +71,11 @@ class MapsforgeMapRepository @Inject constructor(
             tempFile.deleteIfExists()
 
             return remoteMapDatasource.downloadMap(mapSource, tempFile)
-                .map { downloadState ->
+                .onEach { downloadState ->
                     when (downloadState) {
-                        is DownloadState.Downloading -> downloadState
+                        is DownloadState.Downloading -> {}
 
-                        is DownloadState.Failed -> {
-                            tempFile.deleteIfExists()
-                            downloadState
-                        }
+                        is DownloadState.Failed -> tempFile.deleteIfExists()
 
                         is DownloadState.Finished -> {
                             // Move temporal file to destination
@@ -97,8 +94,6 @@ class MapsforgeMapRepository @Inject constructor(
                                 throw Exception("Downloaded map should be available")
                             }
                             updateFlows()
-
-                            downloadState
                         }
                     }
                 }
