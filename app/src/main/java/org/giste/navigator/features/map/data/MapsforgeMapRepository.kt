@@ -63,11 +63,12 @@ class MapsforgeMapRepository @Inject constructor(
 
     override fun downloadMap(mapSource: MapSource): Flow<DownloadState> {
         try {
-            val tempFile = mapsDir.resolve("temp.map")
             val regionDir = mapsDir.resolve(mapSource.region.path)
             val destination = regionDir.resolve(mapSource.fileName)
+            val tempFile = regionDir.resolve("${mapSource.fileName.removeSuffix(".map")}.tmp")
 
             regionDir.createDirectories()
+            tempFile.deleteIfExists()
 
             return remoteMapDatasource.downloadMap(mapSource, tempFile)
                 .map { downloadState ->
@@ -177,16 +178,16 @@ class MapsforgeMapRepository @Inject constructor(
     private suspend fun getAvailableMaps(): Map<String, MapSource> {
         val availableMaps = mutableMapOf<String, MapSource>()
 
-        //coroutineScope {
-        Region.entries.forEach {
-            //launch {
-            availableMaps.putAll(
-                remoteMapDatasource.getAvailableMaps(it)
-                    .associate { it.id to it }
-            )
-            //}
+        coroutineScope {
+            Region.entries.forEach {
+                launch {
+                    availableMaps.putAll(
+                        remoteMapDatasource.getAvailableMaps(it)
+                            .associate { it.id to it }
+                    )
+                }
+            }
         }
-        //}
 
         Log.d(TAG, "Loaded initial available maps: ${availableMaps.size}")
         Log.v(TAG, "Initial available: $availableMaps")

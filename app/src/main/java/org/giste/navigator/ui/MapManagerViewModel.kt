@@ -19,14 +19,17 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.giste.navigator.features.map.domain.MapRepository
 import org.giste.navigator.features.map.domain.MapSource
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDelete
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDownload
+import org.giste.navigator.util.DownloadState
 import javax.inject.Inject
 
 private const val TAG = "MapManagerViewModel"
@@ -35,12 +38,14 @@ private const val TAG = "MapManagerViewModel"
 class MapManagerViewModel @Inject constructor(
     private val mapRepository: MapRepository,
 ) : ViewModel() {
-    val mapsState: StateFlow<List<MapSource>> = mapRepository.getMaps()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList(),
-        )
+    private val downloads = MutableStateFlow<Map<String, DownloadState>>(mapOf())
+    val uiState = combine(mapRepository.getMaps(), downloads) { maps, download ->
+        UiState(maps, download)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UiState(),
+    )
 
     fun onAction(uiAction: UiAction) {
         when (uiAction) {
@@ -50,7 +55,28 @@ class MapManagerViewModel @Inject constructor(
     }
 
     private fun download(map: MapSource) {
-        viewModelScope.launch { mapRepository.downloadMap(map).collect { Log.d(TAG, it.toString()) } }
+        viewModelScope.launch {
+            mapRepository.downloadMap(map).collect { newState ->
+                Log.d(TAG, newState.toString())
+                when (newState) {
+                    is DownloadState.Downloading -> {
+                        downloads.update {
+                            val currentDownloads = downloads.value.toMutableMap()
+                            currentDownloads[map.id] = newState
+                            currentDownloads.toMap()
+                        }
+                    }
+
+                    is DownloadState.Failed, DownloadState.Finished -> {
+                        downloads.update {
+                            val currentDownloads = downloads.value.toMutableMap()
+                            currentDownloads.remove(map.id)
+                            currentDownloads.toMap()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun delete(map: MapSource) {
@@ -61,4 +87,9 @@ class MapManagerViewModel @Inject constructor(
         data class OnDownload(val map: MapSource) : UiAction()
         data class OnDelete(val map: MapSource) : UiAction()
     }
+
+    data class UiState(
+        val maps: List<MapSource> = emptyList(),
+        val downloads: Map<String, DownloadState> = emptyMap(),
+    )
 }

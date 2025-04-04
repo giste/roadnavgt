@@ -75,6 +75,7 @@ fun NavigatorDialog(
     iconButtonSize: Dp = NavigatorTheme.dimensions.dialogButtonIconSize,
     dismissOnBackPress: Boolean = false,
     dismissOnClickOutside: Boolean = false,
+    showAcceptButton: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Dialog(
@@ -108,6 +109,7 @@ fun NavigatorDialog(
                     onCancel = onCancel,
                     innerPadding = innerPadding,
                     iconButtonSize = iconButtonSize,
+                    showAcceptButton = showAcceptButton,
                 )
             }
         }
@@ -157,9 +159,10 @@ fun DialogMessage(
 fun DialogButtons(
     onAccept: () -> Unit,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
     innerPadding: Dp = NavigatorTheme.dimensions.marginPadding,
     iconButtonSize: Dp = NavigatorTheme.dimensions.dialogButtonIconSize,
-    modifier: Modifier = Modifier,
+    showAcceptButton: Boolean = true,
 ) {
     HorizontalDivider()
     Row(
@@ -180,21 +183,23 @@ fun DialogButtons(
                 modifier = Modifier.size(iconButtonSize),
             )
         }
-        Column(
-            modifier = Modifier
-                .testTag(DIALOG_ACCEPT)
-                .background(MaterialTheme.colorScheme.primary)
-                .clickable { onAccept() }
-                .weight(1f)
-                .padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = "Accept",
-                modifier = Modifier.size(iconButtonSize),
-                tint = MaterialTheme.colorScheme.onPrimary,
-            )
+        if (showAcceptButton) {
+            Column(
+                modifier = Modifier
+                    .testTag(DIALOG_ACCEPT)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable { onAccept() }
+                    .weight(1f)
+                    .padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "Accept",
+                    modifier = Modifier.size(iconButtonSize),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
         }
     }
 }

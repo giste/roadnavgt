@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +57,7 @@ import org.giste.navigator.features.settings.ui.SettingGroup
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDelete
 import org.giste.navigator.ui.MapManagerViewModel.UiAction.OnDownload
 import org.giste.navigator.ui.theme.NavigatorTheme
+import org.giste.navigator.util.DownloadState
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -78,11 +80,15 @@ fun MapManagerPreview() {
 
     NavigatorTheme {
         MapManagerContent(
-            mapSources = listOf(
-                MapSource(Region.EUROPE, "spain.map", 0, lastModified, true),
-                MapSource(Region.EUROPE, "portugal.map", 0, lastModified, true, true),
-                MapSource(Region.EUROPE, "france.map", 0, lastModified, true, false, true),
-                MapSource(Region.EUROPE, "italy.map", 0, lastModified),
+            uiState = MapManagerViewModel.UiState(
+                maps = listOf(
+                    MapSource(Region.EUROPE, "spain.map", 0, lastModified, true),
+                    MapSource(Region.EUROPE, "portugal.map", 0, lastModified, true, true),
+                    MapSource(Region.EUROPE, "france.map", 0, lastModified, true, false, true),
+                    MapSource(Region.EUROPE, "italy.map", 0, lastModified),
+                    MapSource(Region.EUROPE, "switzerland.map", 0, lastModified),
+                ),
+                downloads = mapOf("europe/switzerland.map" to DownloadState.Downloading(26))
             ),
             uiAction = {},
             navigateBack = {},
@@ -96,7 +102,7 @@ fun MapManagerScreen(
     navigateBack: () -> Unit,
 ) {
     MapManagerContent(
-        mapSources = mapManagerViewModel.mapsState.collectAsStateWithLifecycle().value,
+        uiState = mapManagerViewModel.uiState.collectAsStateWithLifecycle().value,
         uiAction = mapManagerViewModel::onAction,
         navigateBack = navigateBack,
     )
@@ -104,24 +110,24 @@ fun MapManagerScreen(
 
 @Composable
 fun MapManagerContent(
-    mapSources: List<MapSource>,
+    uiState: MapManagerViewModel.UiState,
     uiAction: (MapManagerViewModel.UiAction) -> Unit,
     navigateBack: () -> Unit,
 ) {
-    val availableMaps by rememberSaveable(mapSources) {
+    val availableMaps by rememberSaveable(uiState.maps) {
         val maps = mutableMapOf<Region, List<MapSource>>()
         Region.entries.forEach { region ->
             maps.put(
                 key = region,
-                value = mapSources.filter { map -> map.region == region && !map.downloaded }
+                value = uiState.maps.filter { map -> map.region == region && !map.downloaded }
                     .sortedBy { it.fileName }
             )
         }
 
         mutableStateOf(maps.toMap())
     }
-    val downloadedMaps by rememberSaveable(mapSources) {
-        mutableStateOf(mapSources.filter { it.downloaded }.sortedBy { it.fileName })
+    val downloadedMaps by rememberSaveable(uiState.maps) {
+        mutableStateOf(uiState.maps.filter { it.downloaded }.sortedBy { it.fileName })
     }
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -145,7 +151,8 @@ fun MapManagerContent(
                         updatable = it.updatable,
                         obsolete = it.obsolete,
                         onDownload = { uiAction(OnDownload(it)) },
-                        onDelete = { uiAction(OnDelete(it)) }
+                        onDelete = { uiAction(OnDelete(it)) },
+                        downloadState = null,
                     )
                 }
                 // Available maps
@@ -155,6 +162,7 @@ fun MapManagerContent(
                             name = getRegionName(it.key),
                             mapSources = it.value,
                             uiAction = uiAction,
+                            downloads = uiState.downloads,
                         )
                     }
                 }
@@ -173,6 +181,7 @@ fun RegionGroup(
     name: String,
     mapSources: List<MapSource>,
     uiAction: (MapManagerViewModel.UiAction) -> Unit,
+    downloads: Map<String, DownloadState>,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -212,6 +221,7 @@ fun RegionGroup(
                     name = it.fileName.removeSuffix(".map"),
                     onDownload = { uiAction(OnDownload(it)) },
                     onDelete = {},
+                    downloadState = downloads[it.id]
                 )
             }
         }
@@ -227,6 +237,7 @@ fun MapRow(
     obsolete: Boolean = false,
     onDownload: () -> Unit,
     onDelete: () -> Unit,
+    downloadState: DownloadState?,
 ) {
     Row(
         modifier = Modifier
@@ -259,10 +270,16 @@ fun MapRow(
                 icon = Icons.Default.Delete,
             )
         } else {
-            CommandBarButton(
-                onClick = { onDownload() },
-                icon = ImageVector.vectorResource(R.drawable.download),
-            )
+            if (downloadState is DownloadState.Downloading) {
+                CircularProgressIndicator(
+                    progress = { downloadState.percentage.div(100f) },
+                )
+            } else {
+                CommandBarButton(
+                    onClick = { onDownload() },
+                    icon = ImageVector.vectorResource(R.drawable.download),
+                )
+            }
         }
     }
     HorizontalDivider()
