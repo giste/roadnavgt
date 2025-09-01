@@ -49,6 +49,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import org.giste.navigator.R
+import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_FIELD
 import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_0
 import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_1
 import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_2
@@ -60,7 +61,6 @@ import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_7
 import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_8
 import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_9
 import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_KEY_DELETE
-import org.giste.navigator.ui.NumberDialogTags.NUMBER_DIALOG_FIELD
 import org.giste.navigator.ui.theme.NavigatorTheme
 
 private const val DELETE = '<'
@@ -130,13 +130,13 @@ fun NumberDialog(
     }
     val decimalFactor by rememberSaveable {
         var scale = 1
-        (1..numberOfDecimalDigits).forEach { scale *= 10 }
+        (1..numberOfDecimalDigits).forEach { _ -> scale *= 10 }
 
         mutableIntStateOf(scale)
     }
     val maxNumber by rememberSaveable {
         var max = 1
-        (1..numberOfIntegerDigits).forEach { max *= 10 }
+        (1..numberOfIntegerDigits).forEach { _ -> max *= 10 }
 
         mutableIntStateOf(max.minus(1))
     }
