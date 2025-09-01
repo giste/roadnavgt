@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.plugin)
@@ -10,12 +12,12 @@ plugins {
 
 android {
     namespace = "org.giste.navigator"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "org.giste.navigator"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -35,8 +37,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
     }
     buildFeatures {
         compose = true
@@ -70,8 +74,8 @@ dependencies {
     implementation(libs.vtm.themes)
     implementation(libs.vtm.android)
 
-    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.24.0:natives-arm64-v8a")
-    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.24.0:natives-x86_64")
+    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.25.0:natives-arm64-v8a")
+    runtimeOnly("com.github.mapsforge.vtm:vtm-android:0.25.0:natives-x86_64")
 
     ksp(libs.hilt.compiler)
 

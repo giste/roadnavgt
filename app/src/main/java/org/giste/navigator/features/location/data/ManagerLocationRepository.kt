@@ -44,7 +44,7 @@ class ManagerLocationRepository @Inject constructor(
     private val looper: Looper,
     private val settingsRepository: SettingsRepository,
     @ApplicationScope externalScope: CoroutineScope,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher,
+    @param:IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : LocationRepository {
     private val locationList: Flow<Location> = callbackFlow {
         val locationCallback = LocationListener { location ->
